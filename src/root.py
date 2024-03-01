@@ -1,5 +1,5 @@
 import sys
-from .models.arg_parser_wrapper import ArgParserWrapper
+from src.models.arg_parser_wrapper import ArgParserWrapper
 
 
 def main() -> None:
