@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 
-from src.utils.arg_validators import valid_dimension_type
+from src.utils.arg_validators import valid_dimension_type, valid_generations_type
 from src.constants import constants
 
 
@@ -17,5 +17,14 @@ class ArgParserWrapper(ArgumentParser):
             type=valid_dimension_type,
             default=[constants.DEFAULT_WIDTH, constants.DEFAULT_HEIGHT],
             metavar=("width", "height"),
-            help="Dimensions for the size of the grid (world)",
+            help="Dimensions for the size of the grid",
+        )
+
+        self.add_argument(
+            "-g",
+            "--generations",
+            type=valid_generations_type,
+            default=constants.DEFAULT_GENERATIONS,
+            metavar="count",
+            help="Num of generations (cycles)",
         )
