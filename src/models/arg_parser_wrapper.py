@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 
 from src.utils.arg_validators import valid_dimension_type
+from src.constants import constants
 
 
 class ArgParserWrapper(ArgumentParser):
@@ -14,7 +15,7 @@ class ArgParserWrapper(ArgumentParser):
             "--dimensions",
             nargs=2,
             type=valid_dimension_type,
-            default=[10, 10],
+            default=[constants.DEFAULT_WIDTH, constants.DEFAULT_HEIGHT],
             metavar=("width", "height"),
             help="Dimensions for the size of the grid (world)",
         )
