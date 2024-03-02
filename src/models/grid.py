@@ -17,8 +17,8 @@ class Grid:  # rename to world
         height: int = constants.DEFAULT_HEIGHT,
         initial_cells: int | None = None,
     ):
-        self._width: int = width
-        self._height: int = height
+        self._cols: int = width
+        self._rows: int = height
         self._initial_cells = initial_cells
         self._matrix: list[list[str]] = [  # TODO: revert back to blank
             [(CellState.random().value) for _ in range(width)] for _ in range(height)
@@ -41,8 +41,8 @@ class Grid:  # rename to world
     def generations_generator(self, num_of_cycles: int):
         for i in range(0, num_of_cycles):
             new_matrix = [
-                [(CellState.random().value) for _ in range(self._width)]
-                for _ in range(self._height)
+                [(CellState.random().value) for _ in range(self._cols)]
+                for _ in range(self._rows)
             ]
             str_res = "\n".join(["".join(row) for row in new_matrix])
             yield str_res
@@ -53,8 +53,7 @@ class Grid:  # rename to world
 
         # begin w placeholder (do not mutate original) set all cells to dead, mirrors the same size as current
         self._matrix: list[list[str]] = [
-            [CellState.DEAD.value for _ in range(self._width)]
-            for _ in range(self._height)
+            [CellState.DEAD.value for _ in range(self._cols)] for _ in range(self._rows)
         ]
 
         # die otherwise
@@ -82,6 +81,7 @@ class Grid:  # rename to world
         cell_coords: tuple[int, int],
         type: Neighbourhoods,
         radius: int = 1,
+        is_wrap: bool = True,
     ) -> set[tuple[int, int]]:
         """
         Determines the neighbourhood (regardless of cell state) within the bounds/context of the game:
@@ -93,127 +93,17 @@ class Grid:  # rename to world
 
         match type:
             case Neighbourhoods.MOORE:
-                neighbours = self._calc_moore_neighbours(cell_coords, radius)
+                neighbours = self._get_moore_neighbourhood(cell_coords, radius)
             case Neighbourhoods.VON_NEUMANN:
-                neighbours = self._calc_von_neighbours(cell_coords, radius)
+                neighbours = self._get_von_neumann_neighbourhood(cell_coords, radius)
             case _:
                 pass
-        # TODO: wrap
+
+        if is_wrap:
+            neighbours = {(n[0] % self._cols, n[1] % self._rows) for n in neighbours}
+
         # TODO: bounds
         return neighbours
-
-    def _calc_moore_neighbours(
-        self, cell_coords: tuple[int, int], radius: int = 1
-    ) -> set[tuple[int, int]]:
-        """
-        Calculates the Moore neighbours surrounding a given cell
-
-        Note: Is not responsible for neighbours out of bounds
-
-        Algorithm summary:
-            - Starting from the given radius, saves the perimiter coords (cells each side)
-            - Progressively decreases the radius saving the next perimiter
-            - Returns a set of cell coords
-        """
-        x = cell_coords[0]
-        y = cell_coords[1]
-        neighbours: set[tuple[int, int]] = set()
-        get_perimiter_width = lambda radius: (radius * 2) + 1
-
-        for r in range(radius, 0, -1):
-            perimeter = self._get_perimeter(
-                bottom_left_coords=(x - r, y - r),
-                top_right_coords=(x + r, y + r),
-                width=get_perimiter_width(r),
-            )
-
-            [neighbours.add(cell) for cell in perimeter.get("top", [])]
-            [neighbours.add(cell) for cell in perimeter.get("right", [])]
-            [neighbours.add(cell) for cell in perimeter.get("bottom", [])]
-            [neighbours.add(cell) for cell in perimeter.get("left", [])]
-
-        return neighbours
-
-    def _calc_von_neighbours(
-        self, cell_coords: tuple[int, int], radius: int = 1
-    ) -> set[tuple[int, int]]:
-        """
-        Calculates the Von Neumann neighbours surrounding a given cell
-
-        Note: Is not responsible for neighbours out of bounds
-
-        Algorithm summary:
-            - Starting from the given radius, saves the perimiter coords (cells each side)
-            - Progressively decreases the radius saving the next perimiter
-            - To achieve Von Neumann neighbourhood shape
-                - Begin by trimming cells from all perimiter sides (equally from both ends leaving middle cells)
-                - Decrement the amount to trim as get closer to the center cell
-            - Returns a set of cell coords
-        """
-        x = cell_coords[0]
-        y = cell_coords[1]
-        neighbours: set[tuple[int, int]] = set()
-        get_perimiter_width = lambda radius: (radius * 2) + 1
-
-        for r in range(radius, 0, -1):
-            perimeter = self._get_perimeter(
-                bottom_left_coords=(x - r, y - r),
-                top_right_coords=(x + r, y + r),
-                width=get_perimiter_width(r),
-            )
-
-            top_trimmed = self._trim_both_sides(perimeter.get("top", []), r)
-            right_trimmed = self._trim_both_sides(perimeter.get("right", []), r)
-            bottom_trimmed = self._trim_both_sides(perimeter.get("bottom", []), r)
-            left_trimmed = self._trim_both_sides(perimeter.get("left", []), r)
-
-            [neighbours.add(cell) for cell in top_trimmed]
-            [neighbours.add(cell) for cell in right_trimmed]
-            [neighbours.add(cell) for cell in bottom_trimmed]
-            [neighbours.add(cell) for cell in left_trimmed]
-
-        return neighbours
-
-    def _get_perimeter(
-        self,
-        bottom_left_coords: tuple[int, int],
-        top_right_coords: tuple[int, int],
-        width: int,
-    ) -> dict:
-        """
-        Given 2 corner coords for a square:
-            - Calcs the rest of the coords completing all sides
-            - Returns a dict containing a list of coords per side
-        """
-        perimeter_sides = {"top": [], "right": [], "bottom": [], "left": []}
-
-        perimeter_sides["top"] = [
-            (top_right_coords[0] - x, top_right_coords[1]) for x in range(width)
-        ]
-        perimeter_sides["right"] = [
-            (top_right_coords[0], top_right_coords[1] - y) for y in range(width)
-        ]
-        perimeter_sides["bottom"] = [
-            (bottom_left_coords[0] + x, bottom_left_coords[1]) for x in range(width)
-        ]
-        perimeter_sides["left"] = [
-            (bottom_left_coords[0], bottom_left_coords[1] + y) for y in range(width)
-        ]
-
-        return perimeter_sides
-
-    def _trim_both_sides(self, list: list, val: int) -> list:
-        """
-        Trims start and end of a given list
-        """
-        if val < 0:
-            return list
-
-        try:
-            return list[val : len(list) - val]
-        except IndexError:
-            # Swallow exception caught when over-trimming (expecting an empty list)
-            return []
 
     def _get_von_neumann_neighbourhood(
         self, host_cell: tuple[int, int], radius: int = 1
@@ -237,12 +127,10 @@ class Grid:  # rename to world
         upper_y = host_y + radius
 
         # Algo summary:
-        # - index stuff
-        #   - The value for how far any 'X' is from the host's X maps to h
-        # - this value maps to the 'padding'
-        # - padding shrinks the window (value applied to both sides to keep window centered)
-        #  - as 'X' gets closer to host's X, the window increases
-        # - this is how we achieve von neumann "diamond" shape
+        #   - Lists holding all 'X' coords from host left and right within radius: [x..upper_x] [x..lower_x]
+        #   - The index of a given 'X' shows how far away 'X' is from the host
+        #   - This value also maps nicely to how much padding is needed to shrink the Y-axis bounds (creating a window)
+        #   - The further away 'X' is = the greater the padding = the smaller the window = the Von Neumann "diamond" shape
         x_coords_right = self._spread_integers(host_x, upper_x)
         x_coords_left = self._spread_integers(host_x, lower_x)
 
