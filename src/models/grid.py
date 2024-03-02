@@ -37,7 +37,7 @@ class Grid:  # rename to world
     def set_cell(self, x, y, char):  # chain to enum type
         self._matrix[x][y] = char
 
-    def evolve(self, num_of_cycles: int):
+    def generations_generator(self, num_of_cycles: int):
         for i in range(0, num_of_cycles):
             new_matrix = [
                 [(CellState.random().value * 2) for _ in range(self._width)]
