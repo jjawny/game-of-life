@@ -48,7 +48,7 @@ def main() -> None:
     updates_per_second = args.updates_per_second
 
     print("generations: ", generations)
-    settings = Settings(generations=generations, updates_per_s=updates_per_second)
+    settings = Settings(generations_count=generations, updates_per_s=updates_per_second)
     print("assinging width height generations", width, height, generations)
     grid = Grid(width=width, height=height)
     render_all_frames(grid, settings)
