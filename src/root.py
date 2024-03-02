@@ -19,11 +19,14 @@ def render_all_frames(grid: Grid, settings: Settings):
     generations = grid.generations_generator(settings.generations_count)
     delay_s = 1 / settings.updates_per_s
 
+    # print initial
+    print(grid.test_print_matrix_as_str())
+    # sleep(100000)
+
     for g in generations:
         sleep(delay_s)
         clear()
         print(g)
-
     # for i in range(0, settings.generations):
     # print(i)
 

@@ -21,8 +21,16 @@ class Grid:  # rename to world
         self._rows: int = height
         self._initial_cells = initial_cells
         self._matrix: list[list[str]] = [  # TODO: revert back to blank
-            [(CellState.random().value) for _ in range(width)] for _ in range(height)
+            [(CellState.DEAD.value) for _ in range(width)] for _ in range(height)
         ]
+
+        # glider
+        self._matrix[2][0] = CellState.ALIVE.value
+        self._matrix[3][1] = CellState.ALIVE.value
+        self._matrix[3][2] = CellState.ALIVE.value
+        self._matrix[2][2] = CellState.ALIVE.value
+        self._matrix[1][2] = CellState.ALIVE.value
+
         self._ghost_generations: list[list[str]] = []
 
     # @property
@@ -30,55 +38,55 @@ class Grid:  # rename to world
         """
         Returns matrix in string format
         """
-
-        print("\n".join(["".join(col) for col in self._matrix]))
-        # test = "".join([row for row in self._matrix])
-        # return self._matrix
-
-    def set_cell(self, x, y, char):  # chain to enum type
-        self._matrix[x][y] = char
+        res = "\n".join(["".join(row) for row in self._matrix])
+        return res
 
     def generations_generator(self, num_of_cycles: int):
         for i in range(0, num_of_cycles):
-            new_matrix = [
-                [(CellState.random().value) for _ in range(self._cols)]
-                for _ in range(self._rows)
-            ]
-            str_res = "\n".join(["".join(row) for row in new_matrix])
+            next_gen = self._get_next_generation()
+            str_res = "\n".join(["".join(row) for row in next_gen])
             yield str_res
 
     def _get_next_generation(self):
-        survival_rule = [2, 3]  # n or m live neighbours must be alive
-        birth_rule = [3]  # n live neightbours must be alive
-
         # begin w placeholder (do not mutate original) set all cells to dead, mirrors the same size as current
-        self._matrix: list[list[str]] = [
-            [CellState.DEAD.value for _ in range(self._cols)] for _ in range(self._rows)
+        next_gen: list[list[str]] = [
+            [CellState.DEAD.value for _ in range(len(self._matrix[0]))]
+            for _ in range(len(self._matrix))
         ]
-
-        # die otherwise
-        # we check all cells and apply rule
-
+        print("getting next gen")
         for x, row in enumerate(self._matrix):
-            for y, col in enumerate(self._matrix):
-                # _is_alive()
+            for y, col in enumerate(self._matrix[0]):
+                if self._is_alive((x, y)):
+                    next_gen[x][y] = CellState.ALIVE.value
                 # the board stays a matrix until printing, during printing we add the border
-                ...
 
-    def _is_alive(self, is_wrap: bool = True):
-        neighbours = self._get_neighbourhood(
-            cell_coords=(1, 2), type=Neighbourhoods.MOORE, radius=3
+        self._matrix = next_gen
+        return next_gen
+
+    def _is_alive(self, host_cell: tuple[int, int], is_wrap: bool = True):
+        is_alive = False
+        survive_rule = {2, 3}
+        resurrect_rule = {3}
+        host_cell_state = self._matrix[host_cell[0]][host_cell[1]]
+        alive_neighbours = self._get_alive_neighbours(
+            host_cell=host_cell, type=Neighbourhoods.MOORE, radius=1
         )
-        # check live_neighbours count in current state (scoped to neighbourhood), separate method here returning coords for live neighbours
-        #  apply rules to determine is_alive bool
-        # return bool
-        is_alive = True
+
+        # Apply rules
+        match host_cell_state:
+            case CellState.ALIVE.value:
+                len(alive_neighbours)
+                is_alive = True if len(alive_neighbours) in survive_rule else False
+            case CellState.DEAD.value:
+                is_alive = True if len(alive_neighbours) in resurrect_rule else False
+            case _:
+                pass
 
         return is_alive
 
-    def _get_neighbourhood(
+    def _get_alive_neighbours(
         self,
-        cell_coords: tuple[int, int],
+        host_cell: tuple[int, int],
         type: Neighbourhoods,
         radius: int = 1,
         is_wrap: bool = True,
@@ -87,23 +95,33 @@ class Grid:  # rename to world
         Determines the neighbourhood (regardless of cell state) within the bounds/context of the game:
          - Gets the neighbours based on type and radius
          - (Optionally) wraps the neighbourhood
-         - Trims all cells out-of-bounds
         """
         neighbours: set[tuple[int, int]] = set()
+        alive_neighbours: set[tuple[int, int]] = set()
 
         match type:
             case Neighbourhoods.MOORE:
-                neighbours = self._get_moore_neighbourhood(cell_coords, radius)
+                neighbours = self._get_moore_neighbourhood(host_cell, radius)
             case Neighbourhoods.VON_NEUMANN:
-                neighbours = self._get_von_neumann_neighbourhood(cell_coords, radius)
+                neighbours = self._get_von_neumann_neighbourhood(host_cell, radius)
             case _:
                 pass
 
+        # extract length into computed property so its always accurate to check bounds
         if is_wrap:
-            neighbours = {(n[0] % self._cols, n[1] % self._rows) for n in neighbours}
+            neighbours = {
+                (n[0] % len(self._matrix[0]), n[1] % len(self._matrix))
+                for n in neighbours
+            }
 
-        # TODO: bounds
-        return neighbours
+        for n in neighbours:
+            x, y = n[0], n[1]
+            is_in_bounds = 0 <= x < len(self._matrix[0]) and 0 <= y < len(self._matrix)
+
+            if is_in_bounds and self._matrix[x][y] == CellState.ALIVE.value:
+                alive_neighbours.add(n)
+
+        return alive_neighbours
 
     def _get_von_neumann_neighbourhood(
         self, host_cell: tuple[int, int], radius: int = 1
