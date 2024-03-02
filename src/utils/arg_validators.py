@@ -9,9 +9,9 @@ def valid_dimension_type(value: str) -> int:
     try:
         dimension = int(value)  # throws ValueError if type cast fails
 
-        if dimension < constants.MIN_DIMENSION or dimension > constants.MAX_DIMENSION:
+        if not (constants.MIN_DIMENSION <= dimension <= constants.MAX_DIMENSION):
             raise ArgumentTypeError(
-                f"Dimensions must be within {constants.MIN_DIMENSION}..{constants.MAX_DIMENSION} inclusive"
+                f"Dimensions must be {constants.MIN_DIMENSION}..{constants.MAX_DIMENSION} inclusive"
             )
 
         return dimension
@@ -26,11 +26,28 @@ def valid_generations_type(value: str) -> int:
     try:
         generations = int(value)
 
-        if generations < constants.MIN_GENERATIONS:
+        if not (constants.MIN_GENERATIONS <= generations <= constants.MAX_GENERATIONS):
             raise ArgumentTypeError(
-                f"Generations must be greater than {constants.MIN_GENERATIONS}"
+                f"Generations must be {constants.MIN_GENERATIONS}..{constants.MAX_GENERATIONS} inclusive"
             )
 
         return generations
     except ValueError:
-        raise ArgumentTypeError("Generations must be integers")
+        raise ArgumentTypeError("Generations must be an integer")
+
+
+def valid_updates_per_second_type(value: str) -> int:
+    """
+    Throws if updates per second is not valid
+    """
+    try:
+        updates = int(value)
+
+        if not (constants.MIN_UPDATES_PER_S <= updates <= constants.MAX_UPDATES_PER_S):
+            raise ArgumentTypeError(
+                f"Updates per second must be {constants.MIN_UPDATES_PER_S}..{constants.MAX_UPDATES_PER_S} inclusive"
+            )
+
+        return updates
+    except ValueError:
+        raise ArgumentTypeError("Updates per second must be an integer")

@@ -1,7 +1,11 @@
 from argparse import ArgumentParser
 
-from src.utils.arg_validators import valid_dimension_type, valid_generations_type
 from src.constants import constants
+from src.utils.arg_validators import (
+    valid_dimension_type,
+    valid_generations_type,
+    valid_updates_per_second_type,
+)
 
 
 class ArgParserWrapper(ArgumentParser):
@@ -26,5 +30,14 @@ class ArgParserWrapper(ArgumentParser):
             type=valid_generations_type,
             default=constants.DEFAULT_GENERATIONS,
             metavar="count",
-            help="Num of generations (cycles)",
+            help="Num of generations",
+        )
+
+        self.add_argument(
+            "-u",
+            "--updates-per-second",
+            type=valid_updates_per_second_type,
+            default=constants.DEFAULT_UPDATES_PER_S,
+            metavar="count",
+            help="Refresh rate for num of generations per second",
         )

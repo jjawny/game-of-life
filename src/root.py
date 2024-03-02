@@ -16,13 +16,13 @@ def render_all_frames(grid: Grid, settings: Settings):
     # construct final str with all items (a frame)s
     # print(Grid.cols, Grid.rows)
     # print(grid.test_print_matrix_as_str())
-    print(settings.generations)
-    generator = grid.evolve(settings.generations)
+    generations = grid.generations_generator(settings.generations_count)
+    delay_s = 1 / settings.updates_per_s
 
-    for gen in generator:
-        sleep(0.1)
+    for g in generations:
+        sleep(delay_s)
         clear()
-        print(gen)
+        print(g)
 
     # for i in range(0, settings.generations):
     # print(i)
@@ -45,8 +45,10 @@ def main() -> None:
 
     width, height = args.dimensions
     generations = args.generations
+    updates_per_second = args.updates_per_second
+
     print("generations: ", generations)
-    settings = Settings(generations=generations)
+    settings = Settings(generations=generations, updates_per_s=updates_per_second)
     print("assinging width height generations", width, height, generations)
     grid = Grid(width=width, height=height)
     render_all_frames(grid, settings)
