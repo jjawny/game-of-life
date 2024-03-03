@@ -76,6 +76,7 @@ class CellMatrix:
     def apply_cells(
         self, cells: list[tuple[int, int]], state: CellState = CellState.ALIVE
     ):
+        """Adds given cells to the matrix if in bounds"""
         for cell in cells:
             y, x = cell[0], cell[1]
             is_in_bounds = 0 <= y < self.rows and 0 <= x < self.cols
@@ -91,25 +92,29 @@ class CellMatrix:
         ]
 
         # Determine if cell is alive in the next matrix
+        # turn into range index for x in range(rows) for y in range(cols)
         for x, _ in enumerate(self._matrix):
             for y, _ in enumerate(self._matrix[0]):
                 if self._is_alive((x, y)):
                     next_matrix[x][y] = CellState.ALIVE.value
 
+        # todo: the board stays a matrix until printing, during printing we add the border
+
         self._matrix = next_matrix
 
     # TODO: review the logic, especially the On^2 loops rows cols x y
     def _is_alive(self, host_cell: tuple[int, int], is_wrap: bool = True):
-        is_alive = False
-        survive_rule = {2, 3}
-        resurrect_rule = {3}
-        host_cell_state = self._matrix[host_cell[0]][host_cell[1]]
+        """Determines if a given cell is alive based on its neighbours and rules"""
+
         alive_neighbours = self._get_alive_neighbours(
             host_cell=host_cell, type=Neighbourhoods.MOORE, radius=1
         )
-        """Determines if a given cell is alive based on its neighbours and rules"""
 
-        # Apply rules
+        is_alive = False
+        host_cell_state = self._matrix[host_cell[0]][host_cell[1]]
+        survive_rule = {2, 3}
+        resurrect_rule = {3}
+
         match host_cell_state:
             case CellState.ALIVE.value:
                 len(alive_neighbours)
@@ -144,16 +149,12 @@ class CellMatrix:
             case _:
                 pass
 
-        # Extract length into computed property so its always accurate to check bounds
         if is_wrap:
-            neighbours = {
-                (n[0] % len(self._matrix[0]), n[1] % len(self._matrix))
-                for n in neighbours
-            }
+            neighbours = {(n[0] % self.cols, n[1] % self.rows) for n in neighbours}
 
         for n in neighbours:
             x, y = n[0], n[1]
-            is_in_bounds = 0 <= x < len(self._matrix[0]) and 0 <= y < len(self._matrix)
+            is_in_bounds = 0 <= x < self.cols and 0 <= y < self.rows
 
             if is_in_bounds and self._matrix[x][y] == CellState.ALIVE.value:
                 alive_neighbours.add(n)
@@ -246,7 +247,6 @@ class CellMatrix:
         return neighbours
 
     def _spread_integers(self, a: int, b: int) -> list[int]:
-        """
-        Spreads range between 2 integers into a list (inclusive)
-        """
-        return list(range(a, b + 1)) if a <= b else list(range(a, b - 1, -1))
+        """Spreads range between 2 integers into a list (inclusive)"""
+        res = list(range(a, b + 1)) if a <= b else list(range(a, b - 1, -1))
+        return res
