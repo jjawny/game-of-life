@@ -2,8 +2,8 @@ from argparse import ArgumentParser
 
 from src.constants import constants
 from src.utils.arg_validators import (
-    valid_wrap_bool,
-    valid_ghost_bool,
+    valid_wrap_type,
+    valid_ghost_type,
     valid_dimension_type,
     valid_generations_type,
     valid_updates_per_second_type,
@@ -46,17 +46,17 @@ class ArgParserWrapper(ArgumentParser):
 
         self.add_argument(
             "--ghost",
-            type=valid_ghost_bool,
+            type=valid_ghost_type,
             default=constants.DEFAULT_IS_GHOST_MODE,
-            metavar="'true' or 'false'",
+            metavar="'yes' or 'no'",
             help="Toggle ghost mode (older generations fading away)",
         )
 
         self.add_argument(
             "-w",
             "--wrap",
-            type=valid_wrap_bool,
+            type=valid_wrap_type,
             default=constants.DEFAULT_IS_WRAP_MODE,
-            metavar="'true' or 'false'",
+            metavar="'yes' or 'no'",
             help="Toggle wrap mode (neighbourhoods wrap around matrix bounds)",
         )
