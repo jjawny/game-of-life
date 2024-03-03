@@ -194,36 +194,40 @@ class CellMatrix:
         upper_y = host_y + radius
 
         # Algo summary:
-        #   - Lists holding all 'X' coords from host left and right within radius: [x..upper_x] [x..lower_x]
-        #   - The index of a given 'X' shows how far away 'X' is from the host
-        #   - This value also maps nicely to how much padding is needed to shrink the Y-axis bounds (creating a window)
-        #   - The further away 'X' is = the greater the padding = the smaller the window = the Von Neumann "diamond" shape
-        y_coords_right = self._spread_integers(host_y, upper_y)
-        y_coords_left = self._spread_integers(host_y, lower_y)
+        #   - Get lists holding all 'Y' coords:
+        #       - Incrementing from host cell to radius limit [y..upper_y]
+        #       - Decrementing from host cell to radius limit [y..lower_y]
+        #   - The index of a given 'Y' in these lists shows how far away 'Y' is from the host
+        #   - This value also maps nicely to how much padding is needed (both sides) to shrink the X-axis range (creating a window)
+        #   - The further away 'Y' is = the greater the padding = the smaller the window = the Von Neumann "diamond" shape
+        y_coords_up = self._spread_integers(host_y, upper_y)
+        y_coords_down = self._spread_integers(host_y, lower_y)
 
-        get_window_padding = lambda y_coords, target_y: (
-            y_coords.index(target_y) if target_y in y_coords else -1
+        get_window_padding = lambda coord_range, target: (
+            coord_range.index(target) if target in coord_range else -1
         )
 
         neighbours: set[tuple[int, int]] = set()
 
         for y in range(lower_y, upper_y + 1):
-            padding = (
-                get_window_padding(y_coords_right, y)
-                if y > host_x
-                else get_window_padding(y_coords_left, y)
-            )
+            padding_x = 0
 
-            # Signifies no window ∴ no cells to save
-            if padding <= -1:
+            if y > host_y:
+                padding_x = get_window_padding(y_coords_up, y)
+            else:
+                padding_x = get_window_padding(y_coords_down, y)
+
+            # Signifies window completely closed ∴ no cells to save
+            if padding_x <= -1:
                 continue
 
-            window_lower_y = lower_x + padding
-            window_upper_y = upper_x - padding
+            # Define X-axis window bounds
+            window_lower_x = lower_x + padding_x
+            window_upper_x = upper_x - padding_x
 
-            for x in range(window_lower_y, window_upper_y + 1):
-                if (y, x) != host_cell:
-                    neighbours.add((y, x))
+            for x in range(window_lower_x, window_upper_x + 1):
+                if (x, y) != host_cell:
+                    neighbours.add((x, y))
 
         return neighbours
 
