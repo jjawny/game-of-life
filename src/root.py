@@ -37,11 +37,12 @@ def render_main_menu():
 def simulate():
     """Starts the simulation based on the settings"""
     glider: list[tuple[int, int]] = [
-        (2, 0),
-        (3, 1),
-        (3, 2),
+        # x, y
+        (0, 2),
+        (1, 1),
+        (2, 1),
         (2, 2),
-        (1, 2),
+        (2, 3),
     ]
     initial_matrix = CellMatrix(
         width=game_state.width, height=game_state.height, seed=glider
