@@ -2,6 +2,8 @@ from argparse import ArgumentParser
 
 from src.constants import constants
 from src.utils.arg_validators import (
+    valid_wrap_bool,
+    valid_ghost_bool,
     valid_dimension_type,
     valid_generations_type,
     valid_updates_per_second_type,
@@ -21,7 +23,7 @@ class ArgParserWrapper(ArgumentParser):
             type=valid_dimension_type,
             default=[constants.DEFAULT_DIMENSION_X, constants.DEFAULT_DIMENSION_Y],
             metavar=("x", "y"),
-            help="Dimensions for the size of the grid",
+            help="Dimensions for the size of the cell matrix",
         )
 
         self.add_argument(
@@ -43,10 +45,18 @@ class ArgParserWrapper(ArgumentParser):
         )
 
         self.add_argument(
-            "-u",
-            "--updates-per-second",
-            type=valid_updates_per_second_type,
-            default=constants.DEFAULT_UPDATES_PER_S,
-            metavar="count",
-            help="Refresh rate for num of generations per second",
+            "--ghost",
+            type=valid_ghost_bool,
+            default=constants.DEFAULT_IS_GHOST_MODE,
+            metavar="'true' or 'false'",
+            help="Toggle ghost mode (older generations fading away)",
+        )
+
+        self.add_argument(
+            "-w",
+            "--wrap",
+            type=valid_wrap_bool,
+            default=constants.DEFAULT_IS_WRAP_MODE,
+            metavar="'true' or 'false'",
+            help="Toggle wrap mode (neighbourhoods wrap around matrix bounds)",
         )

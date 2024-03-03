@@ -16,6 +16,7 @@ class _GameState:
     rows: int = constants.DEFAULT_DIMENSION_Y
     updates_per_s: int = constants.DEFAULT_UPDATES_PER_S
     is_ghost_mode: bool = constants.DEFAULT_IS_GHOST_MODE
+    is_wrap_mode: bool = constants.DEFAULT_IS_WRAP_MODE
     num_of_generations: int = constants.DEFAULT_NUM_OF_GENERATIONS
 
     # State of cells

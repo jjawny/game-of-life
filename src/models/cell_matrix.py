@@ -26,15 +26,19 @@ class CellMatrix:
         self,
         cols: int = constants.DEFAULT_DIMENSION_X,
         rows: int = constants.DEFAULT_DIMENSION_Y,
+        is_wrap: bool = constants.DEFAULT_IS_WRAP_MODE,
         seed: list[tuple[int, int]] = [],
     ):
+        # Assign params to state
+        self._survive_rule = {2, 3}
+        self._resurrect_rule = {3}
+        self._is_wrap = is_wrap
+
+        # Setup initial state
         self._ghost_generations: list[list[str]] = []
         self._matrix: list[list[str]] = [
             [(CellState.DEAD.value) for _ in range(cols)] for _ in range(rows)
         ]
-        self._survive_rule = {2, 3}
-        self._resurrect_rule = {3}
-
         self.apply_cells(seed)
 
     @property
@@ -114,7 +118,7 @@ class CellMatrix:
 
         self._matrix = next_matrix
 
-    def _is_alive(self, host_cell: tuple[int, int], is_wrap: bool = True):
+    def _is_alive(self, host_cell: tuple[int, int]):
         """Determines if a given cell is alive based on its neighbours and rules"""
 
         is_alive = False
@@ -141,11 +145,7 @@ class CellMatrix:
         return is_alive
 
     def _get_alive_neighbours(
-        self,
-        host_cell: tuple[int, int],
-        type: Neighbourhoods,
-        radius: int = 1,
-        is_wrap: bool = True,
+        self, host_cell: tuple[int, int], type: Neighbourhoods, radius: int = 1
     ) -> set[tuple[int, int]]:
         """
         Determines the neighbourhood (regardless of cell state) within the bounds/context of the game:
@@ -163,7 +163,7 @@ class CellMatrix:
             case _:
                 pass
 
-        if is_wrap:
+        if self._is_wrap:
             all_neighbours = {
                 (n[0] % self.cols, n[1] % self.rows) for n in all_neighbours
             }

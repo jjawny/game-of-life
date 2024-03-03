@@ -27,6 +27,8 @@ def apply_initial_settings():
     game_state.cols, game_state.rows = args.dimensions
     game_state.num_of_generations = args.generations
     game_state.updates_per_s = args.updates_per_second
+    game_state.is_ghost_mode = args.ghost
+    game_state.is_wrap_mode = args.wrap
 
 
 def render_main_menu():
@@ -46,7 +48,12 @@ def simulate():
         (2, 2),
         (2, 3),
     ]
-    initial_matrix = CellMatrix(cols=game_state.cols, rows=game_state.rows, seed=glider)
+    initial_matrix = CellMatrix(
+        cols=game_state.cols,
+        rows=game_state.rows,
+        seed=glider,
+        is_wrap=game_state.is_wrap_mode,
+    )
     game_state.assign_new_cell_matrix(initial_matrix)
 
     # Actual code

@@ -3,9 +3,7 @@ from src.constants import constants
 
 
 def valid_dimension_type(value: str) -> int:
-    """
-    Throws if dimension value is not valid
-    """
+    """Throws if dimension value is not valid"""
     try:
         dimension = int(value)  # throws ValueError if type cast fails
 
@@ -20,9 +18,7 @@ def valid_dimension_type(value: str) -> int:
 
 
 def valid_generations_type(value: str) -> int:
-    """
-    Throws if generations is not valid
-    """
+    """Throws if generations is not valid"""
     try:
         generations = int(value)
 
@@ -37,9 +33,7 @@ def valid_generations_type(value: str) -> int:
 
 
 def valid_updates_per_second_type(value: str) -> int:
-    """
-    Throws if updates per second is not valid
-    """
+    """Throws if updates per second is not valid"""
     try:
         updates = int(value)
 
@@ -51,3 +45,23 @@ def valid_updates_per_second_type(value: str) -> int:
         return updates
     except ValueError:
         raise ArgumentTypeError("Updates per second must be an integer")
+
+
+def valid_ghost_bool(value: str) -> bool:
+    """Returns the parsed bool"""
+    return _val_to_bool(value, "Ghost mode")
+
+
+def valid_wrap_bool(value: str) -> bool:
+    """Returns the parsed bool"""
+    return _val_to_bool(value, "Wrap mode")
+
+
+def _val_to_bool(value: str, arg_name: str = "Argument") -> bool:
+    """Throws if value is not 'true' or 'false'"""
+    t, f, v = "true", "false", value.lower()
+
+    if v in (t, f):
+        return v == t
+    else:
+        raise ArgumentTypeError(f"{arg_name} must be '{t}' or '{f}'")
