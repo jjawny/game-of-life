@@ -4,7 +4,6 @@ import sys
 from src.models.arg_parser_wrapper import ArgParserWrapper
 from src.models.cell_matrix import CellMatrix
 from src.models.game_state import game_state
-from src.models.grid import Grid
 
 from typing import List
 from time import sleep
