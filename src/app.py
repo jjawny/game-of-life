@@ -36,6 +36,8 @@ def render_main_menu():
 
 def simulate():
     """Starts the simulation based on the settings"""
+
+    # TODO: temporarily inject the glider for testing, need to explore regression/unit testing in python
     glider: list[tuple[int, int]] = [
         # x, y
         (0, 2),
@@ -49,12 +51,12 @@ def simulate():
     )
     game_state.assign_new_cell_matrix(initial_matrix)
 
+    # Actual code
     generations = game_state.generations_generator()
     delay_s = 1 / game_state.updates_per_s
 
-    # Print initial
+    # Print initial cells
     print(game_state.curr_gen.as_str)
-    # sleep(100000)
 
     for g in generations:
         sleep(delay_s)
