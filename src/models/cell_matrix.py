@@ -24,13 +24,13 @@ class CellMatrix:
 
     def __init__(
         self,
-        width: int = constants.DEFAULT_WIDTH,
-        height: int = constants.DEFAULT_HEIGHT,
+        cols: int = constants.DEFAULT_DIMENSION_X,
+        rows: int = constants.DEFAULT_DIMENSION_Y,
         seed: list[tuple[int, int]] = [],
     ):
         self._ghost_generations: list[list[str]] = []
         self._matrix: list[list[str]] = [
-            [(CellState.DEAD.value) for _ in range(width)] for _ in range(height)
+            [(CellState.DEAD.value) for _ in range(cols)] for _ in range(rows)
         ]
         self._survive_rule = {2, 3}
         self._resurrect_rule = {3}

@@ -24,7 +24,7 @@ def apply_initial_settings():
     args = parser.parse_args()
 
     # Apply
-    game_state.width, game_state.height = args.dimensions
+    game_state.cols, game_state.rows = args.dimensions
     game_state.num_of_generations = args.generations
     game_state.updates_per_s = args.updates_per_second
 
@@ -46,9 +46,7 @@ def simulate():
         (2, 2),
         (2, 3),
     ]
-    initial_matrix = CellMatrix(
-        width=game_state.width, height=game_state.height, seed=glider
-    )
+    initial_matrix = CellMatrix(cols=game_state.cols, rows=game_state.rows, seed=glider)
     game_state.assign_new_cell_matrix(initial_matrix)
 
     # Actual code

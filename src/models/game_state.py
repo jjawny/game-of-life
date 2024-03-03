@@ -12,8 +12,8 @@ class _GameState:
     _lock = threading.Lock()
 
     # Settings
-    width: int = constants.DEFAULT_WIDTH
-    height: int = constants.DEFAULT_HEIGHT
+    cols: int = constants.DEFAULT_DIMENSION_X
+    rows: int = constants.DEFAULT_DIMENSION_Y
     updates_per_s: int = constants.DEFAULT_UPDATES_PER_S
     is_ghost_mode: bool = constants.DEFAULT_IS_GHOST_MODE
     num_of_generations: int = constants.DEFAULT_NUM_OF_GENERATIONS
