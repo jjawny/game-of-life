@@ -25,7 +25,7 @@ def apply_initial_settings():
 
     # Apply
     game_state.width, game_state.height = args.dimensions
-    game_state.generations = args.generations
+    game_state.num_of_generations = args.generations
     game_state.updates_per_s = args.updates_per_second
 
 
