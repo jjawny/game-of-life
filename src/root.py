@@ -1,44 +1,22 @@
 import os
 import sys
+
 from src.models.arg_parser_wrapper import ArgParserWrapper
+from src.models.cell_matrix import CellMatrix
+from src.models.game_state import game_state
 from src.models.grid import Grid
-from src.models.settings import Settings
+
 from typing import List
 from time import sleep
 
 
-def clear():
+def clear_screen():
     os.system("cls" if os.name == "nt" else "clear")
 
 
-def render_all_frames(grid: Grid, settings: Settings):
-    # clear()
-    # construct final str with all items (a frame)s
-    # print(Grid.cols, Grid.rows)
-    # print(grid.test_print_matrix_as_str())
-    generations = grid.generations_generator(settings.generations_count)
-    delay_s = 1 / settings.updates_per_s
-
-    # print initial
-    print(grid.test_print_matrix_as_str())
-    # sleep(100000)
-
-    for g in generations:
-        sleep(delay_s)
-        clear()
-        print(g)
-    # for i in range(0, settings.generations):
-    # print(i)
-
-    # for i in range(0, grid.rows):
-    #     print("\u2593" * grid.cols)
-
-
-def main() -> None:
-    """
-    Extracted main method to be optionally triggered by another script
-    """
-
+def apply_initial_settings():
+    """Applies the initial settings from CLI args"""
+    # Parse
     parser = ArgParserWrapper(
         description="Settings",
         epilog="A speedrun by Johnny Madigan ─=≡Σ(((╯°□°)╯",
@@ -46,12 +24,47 @@ def main() -> None:
     parser.add_game_of_life_args()
     args = parser.parse_args()
 
-    width, height = args.dimensions
-    generations = args.generations
-    updates_per_second = args.updates_per_second
+    # Apply
+    game_state.width, game_state.height = args.dimensions
+    game_state.generations = args.generations
+    game_state.updates_per_s = args.updates_per_second
 
-    print("generations: ", generations)
-    settings = Settings(generations_count=generations, updates_per_s=updates_per_second)
-    print("assinging width height generations", width, height, generations)
-    grid = Grid(width=width, height=height)
-    render_all_frames(grid, settings)
+
+def render_main_menu():
+    """Renders the main menu and reads user inputs"""
+    ...
+
+
+def simulate():
+    """Starts the simulation based on the settings"""
+    glider: list[tuple[int, int]] = [
+        (2, 0),
+        (3, 1),
+        (3, 2),
+        (2, 2),
+        (1, 2),
+    ]
+    initial_matrix = CellMatrix(
+        width=game_state.width, height=game_state.height, seed=glider
+    )
+    game_state.assign_new_cell_matrix(initial_matrix)
+
+    generations = game_state.generations_generator()
+    delay_s = 1 / game_state.updates_per_s
+
+    # Print initial
+    print(game_state.curr_gen.as_str)
+    # sleep(100000)
+
+    for g in generations:
+        sleep(delay_s)
+        clear_screen()
+        print(g)
+
+
+def main() -> None:
+    """Extracted main method to be optionally triggered by another script"""
+
+    apply_initial_settings()
+    render_main_menu()
+    simulate()

@@ -6,7 +6,7 @@ class CellState(Enum):
     """
     Cell state represented by ASCII chars:
     - These chars (on most OS) are proportioned 1x2
-    - To represent a true square, each state is made up of two of these chars
+    - To represent a true square, each state is 2x a char
     """
 
     ALIVE = "\u2588\u2588"      # '██'
