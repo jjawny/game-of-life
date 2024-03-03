@@ -4,7 +4,23 @@ from src.constants import constants
 
 
 class CellMatrix:
-    """Represents a single matrix of cells."""
+    """Represents a single matrix of cells"""
+
+    # Dev notes:
+    #   - When designing algos, remember code matrices are traversed rows first (Y-axis) before cols (X-axis)
+    #   - For example "my_matrix":
+    #
+    #           [o,o,o,o]
+    #     3(y)  [o,o,o,o]
+    #           [o,o,o,o]
+    #
+    #              4(x)
+    #
+    #   - Iterating "for y in my_matrix" accesses each row ([o,o,o,o])
+    #   - Iterating "for x in my_matrix[i]" accesses each col value in row (o)
+    #
+    #   - Store coords the traditional way you'd expect (x,y)
+    #   - When applying coords to a matrix, access w "my_matrix[y][x]"
 
     def __init__(
         self,
@@ -19,14 +35,14 @@ class CellMatrix:
         self.apply_cells(seed)
 
     @property
-    def cols(self):
-        """Get the number of cols (X-axis count aka width)"""
-        return len(self._matrix[0])
-
-    @property
     def rows(self):
         """Get the number of rows (Y-axis count aka height)"""
         return len(self._matrix)
+
+    @property
+    def cols(self):
+        """Get the number of cols (X-axis count aka width)"""
+        return len(self._matrix[0])
 
     @property
     def matrix(self):
@@ -36,7 +52,8 @@ class CellMatrix:
     @property
     def as_str(self):
         """Returns the matrix in string format"""
-        # Combine each row into a single string then combine all rows w newlines
+        # 1. Combine each row's values into a single string
+        # 2. Combine all row strings w newlines
         res = "\n".join(["".join(row) for row in self._matrix])
         return res
 
@@ -45,18 +62,8 @@ class CellMatrix:
         """Returns the coordinates for the alive cells"""
         res: list[tuple[int, int]] = []
 
-        # TODO: remove this cmment or place somewhere more appripriate
-        # the way the matrix works is:
-        # [o,o,o,o,o,o]
-        # [o,o,o,o,o,o]
-        # [o,o,o,o,o,o]
-        # len(matrix) is the rows = 3, this is along the Y-axis
-        # len(matrix[0]) is the cols = 6, this is along the X-axis
-        # therefore y,x as python traverses y before x
-        # general rule when
-        # assign traditional x and y vlues to matrix like next_matrix[y][x]
-        for y, _ in enumerate(self._matrix):
-            for x, cell in enumerate(self._matrix[0]):
+        for y, row in enumerate(self._matrix):
+            for x, cell in enumerate(row):
                 if cell == CellState.ALIVE.value:
                     res.append((x, y))
 
@@ -64,21 +71,26 @@ class CellMatrix:
 
     def change_state(self, new_state: CellState, old_state: CellState | None = None):
         """
-        If no old state is specified, will apply the new state to all cells that are NOT dead
+        If no old state is specified, the new state will be applied to all cells that are NOT dead
         """
+
+        is_old_state_specified = old_state is not None
+
         for row in self._matrix:
-            for idx, cell in enumerate(row):
-                if old_state is None and cell != CellState.DEAD.value:
-                    row[idx] = new_state.value
-                elif old_state is not None and cell == old_state.value:
-                    row[idx] = new_state.value
+            for x, cell in enumerate(row):
+                if not is_old_state_specified and cell != CellState.DEAD.value:
+                    row[x] = new_state.value
+
+                elif is_old_state_specified and cell == old_state.value:
+                    row[x] = new_state.value
 
     def apply_cells(
         self, cells: list[tuple[int, int]], state: CellState = CellState.ALIVE
     ):
         """Adds given cells to the matrix if in bounds"""
+
         for cell in cells:
-            y, x = cell[0], cell[1]
+            x, y = cell[0], cell[1]
             is_in_bounds = 0 <= y < self.rows and 0 <= x < self.cols
 
             if is_in_bounds:
@@ -86,41 +98,38 @@ class CellMatrix:
 
     def mutate(self):
         """Mutates the current cell matrix based on game rules"""
-        # Placeholder w dead cells
+
         next_matrix = [
             [CellState.DEAD.value for _ in range(self.cols)] for _ in range(self.rows)
         ]
 
-        # Determine if cell is alive in the next matrix
-        # turn into range index for x in range(rows) for y in range(cols)
-        for x, _ in enumerate(self._matrix):
-            for y, _ in enumerate(self._matrix[0]):
+        # Determine if cell is alive (survive/resurrect) in the next matrix
+        for y, row in enumerate(self._matrix):
+            for x, _ in enumerate(row):
                 if self._is_alive((x, y)):
-                    next_matrix[x][y] = CellState.ALIVE.value
-
-        # todo: the board stays a matrix until printing, during printing we add the border
+                    next_matrix[y][x] = CellState.ALIVE.value
 
         self._matrix = next_matrix
 
-    # TODO: review the logic, especially the On^2 loops rows cols x y
     def _is_alive(self, host_cell: tuple[int, int], is_wrap: bool = True):
         """Determines if a given cell is alive based on its neighbours and rules"""
 
-        alive_neighbours = self._get_alive_neighbours(
-            host_cell=host_cell, type=Neighbourhoods.MOORE, radius=1
-        )
-
         is_alive = False
-        host_cell_state = self._matrix[host_cell[0]][host_cell[1]]
         survive_rule = {2, 3}
         resurrect_rule = {3}
+        host_x, host_y = host_cell[0], host_cell[1]
+        host_cell_state = self._matrix[host_y][host_x]
+        num_of_alive_neighbours = len(
+            self._get_alive_neighbours(
+                host_cell=host_cell, type=Neighbourhoods.MOORE, radius=1
+            )
+        )
 
         match host_cell_state:
             case CellState.ALIVE.value:
-                len(alive_neighbours)
-                is_alive = True if len(alive_neighbours) in survive_rule else False
+                is_alive = True if num_of_alive_neighbours in survive_rule else False
             case CellState.DEAD.value:
-                is_alive = True if len(alive_neighbours) in resurrect_rule else False
+                is_alive = True if num_of_alive_neighbours in resurrect_rule else False
             case _:
                 pass
 
@@ -138,26 +147,28 @@ class CellMatrix:
          - Gets the neighbours based on type and radius
          - (Optionally) wraps the neighbourhood
         """
-        neighbours: set[tuple[int, int]] = set()
+        all_neighbours: set[tuple[int, int]] = set()
         alive_neighbours: set[tuple[int, int]] = set()
 
         match type:
             case Neighbourhoods.MOORE:
-                neighbours = self._get_moore_neighbourhood(host_cell, radius)
+                all_neighbours = self._get_moore_neighbourhood(host_cell, radius)
             case Neighbourhoods.VON_NEUMANN:
-                neighbours = self._get_von_neumann_neighbourhood(host_cell, radius)
+                all_neighbours = self._get_von_neumann_neighbourhood(host_cell, radius)
             case _:
                 pass
 
         if is_wrap:
-            neighbours = {(n[0] % self.cols, n[1] % self.rows) for n in neighbours}
+            all_neighbours = {
+                (n[0] % self.cols, n[1] % self.rows) for n in all_neighbours
+            }
 
-        for n in neighbours:
-            x, y = n[0], n[1]
+        for neighbour in all_neighbours:
+            x, y = neighbour[0], neighbour[1]
             is_in_bounds = 0 <= x < self.cols and 0 <= y < self.rows
 
-            if is_in_bounds and self._matrix[x][y] == CellState.ALIVE.value:
-                alive_neighbours.add(n)
+            if is_in_bounds and self._matrix[y][x] == CellState.ALIVE.value:
+                alive_neighbours.add(neighbour)
 
         return alive_neighbours
 
@@ -166,10 +177,10 @@ class CellMatrix:
     ) -> set[tuple[int, int]]:
         """
         Calculates the Von Neumann neighbours surrounding a given host cell
-        - Travels from left to right (along X-axis)
-        - Each iteration saves the cells bottom to top (along Y-axis)
-        - Each iteration calcs the window along the Y-axis to achieve Von Neumann
-        - Is not responsible for neighbours out of bounds
+        - Travels from top to bottom (along Y-axis)
+        - Each iteration saves the cells left to right (along X-axis)
+        - Each iteration calcs the window along the X-axis to achieve Von Neumann
+        - Is not responsible for excluding neighbours out of bounds
         - Does not save the host cell
         """
         if radius < 0:
@@ -187,33 +198,32 @@ class CellMatrix:
         #   - The index of a given 'X' shows how far away 'X' is from the host
         #   - This value also maps nicely to how much padding is needed to shrink the Y-axis bounds (creating a window)
         #   - The further away 'X' is = the greater the padding = the smaller the window = the Von Neumann "diamond" shape
-        x_coords_right = self._spread_integers(host_x, upper_x)
-        x_coords_left = self._spread_integers(host_x, lower_x)
+        y_coords_right = self._spread_integers(host_y, upper_y)
+        y_coords_left = self._spread_integers(host_y, lower_y)
 
-        get_window_padding = lambda x_coords, target_x: (
-            x_coords.index(target_x) if target_x in x_coords else -1
+        get_window_padding = lambda y_coords, target_y: (
+            y_coords.index(target_y) if target_y in y_coords else -1
         )
 
         neighbours: set[tuple[int, int]] = set()
 
-        # TODO: swap this around X->Y as we traverse Y before X always in code/python, we get lucky because the neighbourhood is symmetrical
-        for x in range(lower_x, upper_x + 1):
+        for y in range(lower_y, upper_y + 1):
             padding = (
-                get_window_padding(x_coords_right, x)
-                if x > host_x
-                else get_window_padding(x_coords_left, x)
+                get_window_padding(y_coords_right, y)
+                if y > host_x
+                else get_window_padding(y_coords_left, y)
             )
 
             # Signifies no window ∴ no cells to save
             if padding <= -1:
                 continue
 
-            window_lower_y = lower_y + padding
-            window_upper_y = upper_y - padding
+            window_lower_y = lower_x + padding
+            window_upper_y = upper_x - padding
 
-            for y in range(window_lower_y, window_upper_y + 1):
-                if (x, y) != host_cell:
-                    neighbours.add((x, y))
+            for x in range(window_lower_y, window_upper_y + 1):
+                if (y, x) != host_cell:
+                    neighbours.add((y, x))
 
         return neighbours
 
@@ -222,9 +232,9 @@ class CellMatrix:
     ) -> set[tuple[int, int]]:
         """
         Calculates the Moore neighbours surrounding a given host cell
-        - Travels from left to right (along X-axis)
-        - Each iteration saves the cells bottom to top (along Y-axis)
-        - Is not responsible for neighbours out of bounds
+        - Travels from top to bottom (along Y-axis)
+        - Each iteration saves the cells left to right (along X-axis)
+        - Is not responsible for excluding neighbours out of bounds
         - Does not save the host cell
         """
         if radius < 0:
@@ -239,14 +249,14 @@ class CellMatrix:
 
         neighbours: set[tuple[int, int]] = set()
 
-        for x in range(lowerX, upperX + 1):
-            for y in range(lowerY, upperY + 1):
+        for y in range(lowerY, upperY + 1):
+            for x in range(lowerX, upperX + 1):
                 if (x, y) != host_cell:
                     neighbours.add((x, y))
 
         return neighbours
 
     def _spread_integers(self, a: int, b: int) -> list[int]:
-        """Spreads range between 2 integers into a list (inclusive)"""
+        """Spreads the range of ints between a and b (inclusive)"""
         res = list(range(a, b + 1)) if a <= b else list(range(a, b - 1, -1))
         return res
