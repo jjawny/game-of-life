@@ -67,8 +67,8 @@ class CellMatrix:
         If no old state is specified, will apply the new state to all cells that are NOT dead
         """
         for row in self._matrix:
-            for idx, cell in enumerate(self._matrix[0]):
-                if old_state is None and cell == CellState.DEAD.value:
+            for idx, cell in enumerate(row):
+                if old_state is None and cell != CellState.DEAD.value:
                     row[idx] = new_state.value
                 elif old_state is not None and cell == old_state.value:
                     row[idx] = new_state.value
