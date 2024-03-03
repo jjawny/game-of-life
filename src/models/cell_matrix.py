@@ -32,6 +32,9 @@ class CellMatrix:
         self._matrix: list[list[str]] = [
             [(CellState.DEAD.value) for _ in range(width)] for _ in range(height)
         ]
+        self._survive_rule = {2, 3}
+        self._resurrect_rule = {3}
+
         self.apply_cells(seed)
 
     @property
@@ -97,7 +100,7 @@ class CellMatrix:
                 self._matrix[y][x] = state.value
 
     def mutate(self):
-        """Mutates the current cell matrix based on game rules"""
+        """Mutates the current cell matrix"""
 
         next_matrix = [
             [CellState.DEAD.value for _ in range(self.cols)] for _ in range(self.rows)
@@ -115,8 +118,6 @@ class CellMatrix:
         """Determines if a given cell is alive based on its neighbours and rules"""
 
         is_alive = False
-        survive_rule = {2, 3}
-        resurrect_rule = {3}
         host_x, host_y = host_cell[0], host_cell[1]
         host_cell_state = self._matrix[host_y][host_x]
         num_of_alive_neighbours = len(
@@ -127,9 +128,13 @@ class CellMatrix:
 
         match host_cell_state:
             case CellState.ALIVE.value:
-                is_alive = True if num_of_alive_neighbours in survive_rule else False
+                is_alive = (
+                    True if num_of_alive_neighbours in self._survive_rule else False
+                )
             case CellState.DEAD.value:
-                is_alive = True if num_of_alive_neighbours in resurrect_rule else False
+                is_alive = (
+                    True if num_of_alive_neighbours in self._resurrect_rule else False
+                )
             case _:
                 pass
 
@@ -193,7 +198,7 @@ class CellMatrix:
         lower_y = host_y - radius
         upper_y = host_y + radius
 
-        # Algo summary:
+        # ALGO SUMMARY TO ACHIEVE VON NEUMANN:
         #   - Get lists holding all 'Y' coords:
         #       - Incrementing from host cell to radius limit [y..upper_y]
         #       - Decrementing from host cell to radius limit [y..lower_y]

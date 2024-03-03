@@ -14,15 +14,15 @@ class _GameState:
     # Settings
     width: int = constants.DEFAULT_WIDTH
     height: int = constants.DEFAULT_HEIGHT
-    generations: int = constants.DEFAULT_GENERATIONS
     updates_per_s: int = constants.DEFAULT_UPDATES_PER_S
     is_ghost_mode: bool = constants.DEFAULT_IS_GHOST_MODE
+    num_of_generations: int = constants.DEFAULT_NUM_OF_GENERATIONS
 
     # State of cells
     _curr_gen: CellMatrix = CellMatrix()
     _prev_gens: list[CellMatrix] = []  # newest -> oldest
 
-    # Index = priority (lowest -> highest)
+    # Index = priority (lowest -> highest / dead -> alive)
     _priority_state_list = [
         CellState.DEAD.value,
         CellState.RARE.value,
@@ -46,29 +46,41 @@ class _GameState:
 
     @property
     def curr_gen(self):
+        """Returns the current generation's cell matrix"""
         return self._curr_gen
 
     def assign_new_cell_matrix(self, matrix: CellMatrix):
+        """
+        Assigns a new cell matrix as the current generation and resets previous generations history
+        """
         self._prev_gens = []
         self._curr_gen = matrix
 
     def generations_generator(self):
-        for _ in range(0, self.generations):
+        """
+        Returns a generator for accessing each generation as the cells evolve
+        """
+        for _ in range(0, self.num_of_generations):
             self._get_next_generation()
-            # yield self._curr_gen.as_str
-            yield (
+            next_gen = (
                 self._combine_all_gens_as_str()
                 if self.is_ghost_mode
                 else self._curr_gen.as_str
             )
 
+            yield next_gen
+
     def _get_next_generation(self):
-        # EVOLVE: Keep a copy of the current matrix before mutating
+        """
+        Gets the next generation and responsible for updating the previous generation history
+        """
         curr_gen_copy: CellMatrix = copy(self._curr_gen)
         self._curr_gen.mutate()
 
-        # GHOST: Store most recent 3 generations (number based on amount of non DEAD/ALIVE cell states)
-        # apply ghost affect progressively
+        # GHOST:
+        #   - Insert current gen at beginning (newest -> oldest)
+        #   - Slice to keep only 3 most recent generations (3 is based on amount of non DEAD/ALIVE cell states)
+        #   - Apply a different ghost affect, showing generations fading away as they get older
         self._prev_gens.insert(0, curr_gen_copy)
         self._prev_gens = self._prev_gens[:3]
 
@@ -77,13 +89,14 @@ class _GameState:
                 gen = self._prev_gens[idx]
                 gen.change_state(state)
 
-        # TODO: the board stays a matrix until printing, during printing we add the border
-
         return self._curr_gen
 
-    def _combine_all_gens_as_str(self):
-        # Convert from cell states to cell priority matrices
+    def _combine_all_gens_as_str(self) -> str:
+        """
+        Combines all generations into a single matrix (prioritising cell state)
+        """
 
+        # Convert cell states to cell priority per layer (matrix)
         layers: list[list[list[int]]] = [
             np.vectorize(self._cell_to_priority)(self._curr_gen.matrix)
         ]
@@ -91,8 +104,10 @@ class _GameState:
         for gen in self._prev_gens:
             layers.append(np.vectorize(self._cell_to_priority)(gen.matrix))
 
-        # Flatten/reduce/combine into 1 then convert from priority back to cell states, then string
+        # Flatten/reduce/combine layers into 1
         combined_matrix: list[list[int]] = np.maximum.reduce(layers, axis=0)
+
+        # Convert priorities back to corresponding cell states
         combined_matrix_cell_states: list[list[str]] = np.array(
             self._priority_state_list
         )[combined_matrix].tolist()
@@ -102,11 +117,16 @@ class _GameState:
         return as_str
 
     def _cell_to_priority(self, value: str) -> int:
-        priority = (
-            self._priority_state_list.index(value)
-            if value in self._priority_state_list
-            else -1
-        )
+        """
+        Maps a cell state to its priority over other cell states
+
+        Priority = (highest -> lowest / cell states dead -> alive)
+        """
+        priority = -1  # assume not in list
+
+        if value in self._priority_state_list:
+            priority = self._priority_state_list.index(value)
+
         return priority
 
 

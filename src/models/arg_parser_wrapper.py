@@ -28,7 +28,7 @@ class ArgParserWrapper(ArgumentParser):
             "-g",
             "--generations",
             type=valid_generations_type,
-            default=constants.DEFAULT_GENERATIONS,
+            default=constants.DEFAULT_NUM_OF_GENERATIONS,
             metavar="count",
             help="Num of generations",
         )
