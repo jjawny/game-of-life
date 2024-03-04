@@ -1,3 +1,5 @@
+import random
+
 from src.enums.neighbourhoods import Neighbourhoods
 from src.enums.cell_state import CellState
 from src.constants import constants
@@ -27,6 +29,7 @@ class CellMatrix:
 
     def __init__(
         self,
+        random: int = constants.DEFAULT_RANDOM,
         cols: int = constants.DEFAULT_DIMENSION_X,
         rows: int = constants.DEFAULT_DIMENSION_Y,
         is_wrap: bool = constants.DEFAULT_IS_WRAP_MODE,
@@ -35,16 +38,18 @@ class CellMatrix:
         seed: list[tuple[int, int]] = [],
     ):
         # Assign params to state
+        # TODO: use existing custom validation functions here as well ?
+        self._random = random
+        self._is_wrap = is_wrap
         self._survive_rule = survival_rule
         self._resurrect_rule = resurrection_rule
-        self._is_wrap = is_wrap
 
         # Setup initial state
         self._ghost_generations: list[list[str]] = []
         self._matrix: list[list[str]] = [
             [(CellState.DEAD.value) for _ in range(cols)] for _ in range(rows)
         ]
-        self.apply_cells(seed)
+        self.apply_cells(seed) if seed else self.apply_random_cells()
 
     @property
     def rows(self):
@@ -107,6 +112,14 @@ class CellMatrix:
 
             if is_in_bounds:
                 self._matrix[y][x] = state.value
+
+    def apply_random_cells(self, state: CellState = CellState.ALIVE):
+        """Randomly creates cells with a given state"""
+        for row in self._matrix:
+            for x, _ in enumerate(row):
+                random_percent = random.randint(0, 100)  # %
+                if random_percent <= self._random:
+                    row[x] = state.value
 
     def mutate(self):
         """Mutates the current cell matrix"""

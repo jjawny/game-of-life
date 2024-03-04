@@ -70,6 +70,21 @@ def parse_rule_type(values: str):
         raise ArgumentTypeError(f"Rule numbers must be (comma separated) integers")
 
 
+def parse_random_type(value: str) -> int:
+    """Throws if random value is not valid"""
+    try:
+        random = int(value)
+
+        if not (constants.MIN_RANDOM <= random <= constants.MAX_RANDOM):
+            raise ArgumentTypeError(
+                f"Random % must be {constants.MIN_RANDOM}..{constants.MAX_RANDOM} inclusive"
+            )
+
+        return random
+    except ValueError:
+        raise ArgumentTypeError("Random % must be an integer")
+
+
 def parse_ghost_type(value: str) -> bool:
     """Returns the parsed value"""
     return _parse_yes_or_no(value, "Ghost mode")

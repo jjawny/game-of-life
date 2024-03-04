@@ -30,6 +30,7 @@ def apply_initial_settings():
     game_state.is_wrap_mode = args.wrap
     game_state.survival_rule = args.survival_rule
     game_state.resurrection_rule = args.resurrection_rule
+    game_state.random = args.random
 
 
 def render_main_menu():
@@ -56,6 +57,7 @@ def simulate():
         is_wrap=game_state.is_wrap_mode,
         survival_rule=game_state.survival_rule,
         resurrection_rule=game_state.resurrection_rule,
+        random=game_state.random,
     )
     game_state.assign_new_cell_matrix(initial_matrix)
 

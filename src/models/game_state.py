@@ -20,6 +20,7 @@ class _GameState:
     num_of_generations: int = constants.DEFAULT_NUM_OF_GENERATIONS
     survival_rule: set = constants.DEFAULT_SURVIVAL_RULE
     resurrection_rule: set = constants.DEFAULT_RESURRECTION_RULE
+    random: int = constants.DEFAULT_RANDOM
 
     # State of cells
     _curr_gen: CellMatrix = CellMatrix()
