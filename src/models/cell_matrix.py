@@ -27,8 +27,12 @@ class CellMatrix:
     #   - Store coords the traditional way you'd expect (x,y)
     #   - When applying coords to a matrix, access w "my_matrix[y][x]"
 
+    _ghost_generations: list[list[str]] = []
+
     def __init__(
         self,
+        seed: list[tuple[int, int]] = [],
+        radius: int = constants.DEFAULT_RADIUS,
         random: int = constants.DEFAULT_RANDOM,
         cols: int = constants.DEFAULT_DIMENSION_X,
         rows: int = constants.DEFAULT_DIMENSION_Y,
@@ -36,10 +40,7 @@ class CellMatrix:
         survival_rule: set = constants.DEFAULT_SURVIVAL_RULE,
         resurrection_rule: set = constants.DEFAULT_RESURRECTION_RULE,
         neighbourhood: Neighbourhood = constants.DEFAULT_NEIGHBOURHOOD,
-        radius: int = constants.DEFAULT_RADIUS,
-        seed: list[tuple[int, int]] = [],
     ):
-        # Assign params to state
         # TODO: use existing custom validation functions here as well ?
         self._random = random
         self._is_wrap = is_wrap
@@ -47,9 +48,6 @@ class CellMatrix:
         self._resurrect_rule = resurrection_rule
         self._neighbourhood = neighbourhood
         self._radius = radius
-
-        # Setup initial state
-        self._ghost_generations: list[list[str]] = []
         self._matrix: list[list[str]] = [
             [(CellState.DEAD.value) for _ in range(cols)] for _ in range(rows)
         ]

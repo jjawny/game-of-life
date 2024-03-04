@@ -3,27 +3,29 @@ import sys
 import math
 
 from time import sleep
+import keyboard
 
 from src.models.arg_parser_wrapper import ArgParserWrapper
 from src.models.cell_matrix import CellMatrix
 from src.models.game_state import game_state
+from src.models.main_menu import MainMenu
+from src.models.setting import Setting
 from src.utils.terminal_utils import (
     print_banner,
     print_generation_count_footer,
     clear_screen,
+    print_exit_footer,
 )
 
-
-# def on_spacebar_release(key):
-#     """
-#     - Returns false if spacebar was pressed and released
-#     - When used as pynput's callbacks, will signal to stop listening
-#     """
-#     if key == keyboard.Key.space:
-#         spacebar_listener.stop()
-
-
-# spacebar_listener = keyboard.Listener(on_release=on_spacebar_release)
+from src.utils.arg_validators import (
+    pparse_dimension_type,
+    pparse_updates_per_s_type,
+    pparse_radius_type,
+    pparse_generations_type,
+    pparse_random_type,
+    pparse_neighbourhood_type,
+    pparse_bool,
+)
 
 
 def apply_initial_settings():
@@ -37,26 +39,97 @@ def apply_initial_settings():
     args = parser.parse_args()
 
     # Apply
-    game_state.cols, game_state.rows = args.dimensions
-    game_state.num_of_generations = args.generations
-    game_state.updates_per_s = args.updates_per_second
-    game_state.is_ghost_mode = args.ghost
-    game_state.is_wrap_mode = args.wrap
-    game_state.is_step_mode = args.step
-    game_state.survival_rule = args.survival_rule
-    game_state.resurrection_rule = args.resurrection_rule
-    game_state.random = args.random
-    game_state.neighbourhood = args.neighbourhood
-    game_state.radius = args.radius
+    game_state.set_value("radius", args.radius)
+    game_state.set_value("random", args.random)
+    game_state.set_value("rows", args.dimensions[0])
+    game_state.set_value("cols", args.dimensions[1])
+    game_state.set_value("is_wrap_mode", args.wrap)
+    game_state.set_value("is_ghost_mode", args.ghost)
+    game_state.set_value("neighbourhood", args.neighbourhood)
+    game_state.set_value("survival_rule", args.survival_rule)
+    game_state.set_value("num_of_generations", args.generations)
+    game_state.set_value("updates_per_s", args.updates_per_second)
+    game_state.set_value("resurrection_rule", args.resurrection_rule)
 
 
-def render_main_menu():
+def testing_main_menu():
     """Renders the main menu and reads user inputs"""
-    ...
+    opts = game_state.values
+
+    menu_options: list[Setting] = [
+        Setting(
+            display_name="Dimension X",
+            name="cols",
+            value=opts["cols"],
+            parse_value_callback=pparse_dimension_type,
+        ),
+        Setting(
+            display_name="Dimension Y",
+            name="rows",
+            value=opts["rows"],
+            parse_value_callback=pparse_dimension_type,
+        ),
+        Setting(
+            display_name="Random %",
+            name="random",
+            value=opts["random"],
+            parse_value_callback=pparse_random_type,
+        ),
+        Setting(
+            display_name="Num of generations",
+            name="generations",
+            value=opts["num_of_generations"],
+            parse_value_callback=pparse_generations_type,
+        ),
+        Setting(
+            display_name="Updates per second",
+            name="updates_per_s",
+            value=opts["updates_per_s"],
+            parse_value_callback=pparse_updates_per_s_type,
+        ),
+        Setting(
+            display_name="Ghost mode",
+            name="is_ghost_mode",
+            value=opts["is_ghost_mode"],
+            possible_values=["True", "False"],
+            parse_value_callback=pparse_bool,
+        ),
+        Setting(
+            display_name="Wrap mode",
+            name="is_wrap_mode",
+            value=opts["is_wrap_mode"],
+            possible_values=["True", "False"],
+            parse_value_callback=pparse_bool,
+        ),
+        Setting(
+            display_name="Neighbourhood",
+            name="neighbourhood",
+            value=opts["neighbourhood"],
+            possible_values=["Moore", "Von Neumann"],
+            parse_value_callback=pparse_neighbourhood_type,
+        ),
+        Setting(
+            display_name="Radius",
+            name="radius",
+            value=opts["radius"],
+            parse_value_callback=pparse_radius_type,
+        ),
+    ]
+
+    menu = MainMenu(final_callback=testing_final_callback, options=menu_options)
+    menu.render()
 
 
-def simulate():
-    """Starts the simulation based on the settings"""
+def testing_final_callback(settings: list[Setting]):
+    """
+    Starts the simulation based on the settings
+
+    To keep things modular, the following has no knowledge of global 'game_state'
+
+    TODO: remove game_state from global and instead have these methods as a module? decouple from game_state
+
+    Throws if unable to find or parse an opt
+    """
 
     # TODO: temporarily inject the glider for testing, need to explore regression/unit testing in python
     glider: list[tuple[int, int]] = [
@@ -67,39 +140,56 @@ def simulate():
         (2, 2),
         (2, 3),
     ]
+
+    # Convert to dict for easy assignment
+    settings_dict = {setting.name: setting.value for setting in settings}
+
     initial_matrix = CellMatrix(
-        cols=game_state.cols,
-        rows=game_state.rows,
         seed=glider,
-        is_wrap=game_state.is_wrap_mode,
-        survival_rule=game_state.survival_rule,
-        resurrection_rule=game_state.resurrection_rule,
-        random=game_state.random,
-        neighbourhood=game_state.neighbourhood,
-        radius=game_state.radius,
+        cols=settings_dict["cols"],
+        rows=settings_dict["rows"],
+        radius=settings_dict["radius"],
+        random=settings_dict["random"],
+        neighbourhood=settings_dict["neighbourhood"],
+        is_wrap=settings_dict["is_wrap_mode"],
+        # survival_rule=settings_dict["survival_rule"],
+        # resurrection_rule=settings_dict["resurrection_rule"],
     )
+
     game_state.assign_new_cell_matrix(initial_matrix)
 
-    # Actual code
-    generations = game_state.generations_generator()
-    delay_s = 1 / game_state.updates_per_s
+    generations = game_state.generations_generator(
+        settings_dict["generations"], settings_dict["is_ghost_mode"]
+    )
+    delay_s = 1 / settings_dict["updates_per_s"]
 
     # Print initial cells
     print(game_state.curr_gen.as_str)
 
+    offset = 0
+
     for idx, gen in enumerate(generations):
-        # keyboard.wait('space') if game_state.is_step_mode: else sleep(delay_s)
         sleep(delay_s)
         clear_screen()
         offset = math.floor(len(gen.split("\n")[0]) / 2)
         print_banner(offset)
         print(gen)
-        print_generation_count_footer(idx, offset)
+        print_generation_count_footer(idx + 1, offset)
+
+    # PYNPUT BUG: will dump all key presses when program ends
+    # Tried flushing the buffer, supressing the output... issue persists
+    # Hack solution to exit gracefully: wait for KeyboardInterrupt (Ctrl+C) handled in main()
+    is_shown_footer = False
+    while True:
+        if not is_shown_footer:
+            print_exit_footer(offset)
+        sleep(1000)
 
 
 def main() -> None:
     """Extracted main method to be optionally triggered by another script"""
-
-    apply_initial_settings()
-    render_main_menu()
-    simulate()
+    try:
+        apply_initial_settings()
+        testing_main_menu()
+    except KeyboardInterrupt:
+        "Exiting..."

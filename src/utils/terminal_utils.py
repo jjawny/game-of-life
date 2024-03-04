@@ -22,3 +22,8 @@ def print_generation_count_footer(count: int, offset: int = 0):
     offset_str = ' ' * max(0, offset - 8) # 8 = current chars from start to middle
 
     print(f"{offset_str}Generation #{count}")
+
+def print_exit_footer(offset: int = 0):
+    """Prints the exit footer"""
+    offset_str = ' ' * max(0, offset - 8) # 8 = current chars from start to middle
+    print(f"{offset_str}Ctrl+C to exit")

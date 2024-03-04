@@ -33,7 +33,7 @@ def parse_generations_type(value: str) -> int:
         raise ArgumentTypeError("Generations must be an integer")
 
 
-def parse_updates_per_second_type(value: str) -> int:
+def parse_updates_per_s_type(value: str) -> int:
     """Throws if updates per second is not valid"""
     try:
         updates = int(value)
@@ -129,11 +129,6 @@ def parse_wrap_type(value: str) -> bool:
     return _parse_yes_or_no(value, "Wrap mode")
 
 
-def parse_step_type(value: str) -> bool:
-    """Returns the parsed value"""
-    return _parse_yes_or_no(value, "Step mode")
-
-
 def _parse_yes_or_no(value: str, arg_name: str = "Argument") -> bool:
     """Throws if value is not 'yes' or 'no'"""
     y, n, v = "yes", "no", value.lower()
@@ -142,3 +137,128 @@ def _parse_yes_or_no(value: str, arg_name: str = "Argument") -> bool:
         return v == y
     else:
         raise ArgumentTypeError(f"{arg_name} must be '{y}' or '{n}'")
+
+
+# unknown to value
+def pparse_neighbourhood_type(value) -> Neighbourhood:
+    """Throws if neighbourhood type is not valid"""
+
+    try:
+        moore, von = "moore", "von neumann"
+
+        # Use a set to leverage # table complexity (O(1))
+        if value.lower() not in {moore, von}:
+            raise ArgumentTypeError(f"Neighbourhood invalid")
+
+        match value:
+            case "moore":
+                return Neighbourhood.MOORE
+            case "von neumann":
+                return Neighbourhood.VON_NEUMANN
+            case _:
+                raise ArgumentTypeError("Neighbourhood not supported yet")
+    except ValueError:
+        raise ArgumentTypeError("Neighbourhood invalid")
+
+
+def pparse_bool(value) -> bool:
+    """Returns the parsed value"""
+    try:
+        if type(value) == bool:
+            return value
+        else:
+            val_lowered = value.lower()
+            if val_lowered == "true":
+                return True
+            elif val_lowered == "false":
+                return False
+            raise ArgumentTypeError("Bool invalid")
+    except ValueError:
+        raise ArgumentTypeError("Bool invalid")
+
+
+def pparse_dimension_type(value) -> int:
+    """Throws if dimension value is not valid"""
+    try:
+        dimension = int(value)  # throws ValueError if type cast fails
+
+        if not (constants.MIN_DIMENSION <= dimension <= constants.MAX_DIMENSION):
+            raise ArgumentTypeError(
+                f"Dimensions must be {constants.MIN_DIMENSION}..{constants.MAX_DIMENSION} inclusive"
+            )
+
+        return dimension
+    except ValueError:
+        raise ArgumentTypeError("Dimensions must be integers")
+
+
+def pparse_generations_type(value) -> int:
+    """Throws if generations is not valid"""
+    try:
+        generations = int(value)
+
+        if not (constants.MIN_GENERATIONS <= generations <= constants.MAX_GENERATIONS):
+            raise ArgumentTypeError(
+                f"Generations must be {constants.MIN_GENERATIONS}..{constants.MAX_GENERATIONS} inclusive"
+            )
+
+        return generations
+    except ValueError:
+        raise ArgumentTypeError("Generations must be an integer")
+
+
+def pparse_radius_type(value) -> int:
+    """Throws if radius is not valid"""
+    try:
+        radius = int(value)
+
+        if not (constants.MIN_RADIUS <= radius <= constants.MAX_RADIUS):
+            raise ArgumentTypeError(
+                f"Radius must be {constants.MIN_RADIUS}..{constants.MAX_RADIUS} inclusive"
+            )
+
+        return radius
+    except ValueError:
+        raise ArgumentTypeError("Radius must be an integer")
+
+
+def pparse_random_type(value) -> int:
+    """Throws if random value is not valid"""
+    try:
+        random = int(value)
+
+        if not (constants.MIN_RANDOM <= random <= constants.MAX_RANDOM):
+            raise ArgumentTypeError(
+                f"Random % must be {constants.MIN_RANDOM}..{constants.MAX_RANDOM} inclusive"
+            )
+
+        return random
+    except ValueError:
+        raise ArgumentTypeError("Random % must be an integer")
+
+
+def pparse_updates_per_s_type(value) -> int:
+    """Throws if updates per second is not valid"""
+    try:
+        updates = int(value)
+
+        if not (constants.MIN_UPDATES_PER_S <= updates <= constants.MAX_UPDATES_PER_S):
+            raise ArgumentTypeError(
+                f"Updates per second must be {constants.MIN_UPDATES_PER_S}..{constants.MAX_UPDATES_PER_S} inclusive"
+            )
+
+        return updates
+    except ValueError:
+        raise ArgumentTypeError("Updates per second must be an integer")
+
+
+# def is_in_bounds(value: int, lower: int, upper: int, is_inclusive: bool = True):
+#     """Checks if a value is in bounds"""
+#     if lower >= upper:
+#         raise ValueError("Lower bound must be less than the upper bound")
+
+#     if is_inclusive:
+#         upper += 1
+#         lower -= 1
+
+#     return lower < value < upper

@@ -1,6 +1,7 @@
 import threading
 import numpy as np
 
+from src.utils.simulation_utils import cell_to_priority
 from src.enums.neighbourhood import Neighbourhood
 from src.models.cell_matrix import CellMatrix
 from src.enums.cell_state import CellState
@@ -8,30 +9,32 @@ from src.constants import constants
 from copy import copy
 
 
+
 class _GameState:
     _instance = None
     _lock = threading.Lock()
 
     # Settings
-    cols: int = constants.DEFAULT_DIMENSION_X
-    rows: int = constants.DEFAULT_DIMENSION_Y
-    random: int = constants.DEFAULT_RANDOM
-    is_wrap_mode: bool = constants.DEFAULT_IS_WRAP_MODE
-    is_ghost_mode: bool = constants.DEFAULT_IS_GHOST_MODE
-    is_step_mode: bool = constants.DEFAULT_IS_STEP_MODE
-    updates_per_s: int = constants.DEFAULT_UPDATES_PER_S
-    num_of_generations: int = constants.DEFAULT_NUM_OF_GENERATIONS
-    survival_rule: set = constants.DEFAULT_SURVIVAL_RULE
-    resurrection_rule: set = constants.DEFAULT_RESURRECTION_RULE
-    neighbourhood: Neighbourhood = constants.DEFAULT_NEIGHBOURHOOD
-    radius: int = constants.DEFAULT_RADIUS
+    # Note: internal methods access settings dict with bracket notation, we assume the key/value pair is defined and with correct type
+    _settings = {
+        "radius":               constants.DEFAULT_RADIUS,
+        "random":               constants.DEFAULT_RANDOM,
+        "cols":                 constants.DEFAULT_DIMENSION_X,
+        "rows":                 constants.DEFAULT_DIMENSION_Y,
+        "is_wrap_mode":         constants.DEFAULT_IS_WRAP_MODE,
+        "is_ghost_mode":        constants.DEFAULT_IS_GHOST_MODE,
+        "updates_per_s":        constants.DEFAULT_UPDATES_PER_S,
+        "neighbourhood":        constants.DEFAULT_NEIGHBOURHOOD,
+        "survival_rule":        constants.DEFAULT_SURVIVAL_RULE,
+        "resurrection_rule":    constants.DEFAULT_RESURRECTION_RULE,
+        "num_of_generations":   constants.DEFAULT_NUM_OF_GENERATIONS,
+    }
+    
 
-    # State of cells
+    # Generations (cell states)
     _curr_gen: CellMatrix = CellMatrix()
     _prev_gens: list[CellMatrix] = []  # newest -> oldest
-
-    # Index = priority (lowest -> highest / dead -> alive)
-    _priority_state_list = [
+    _priority_order = [
         CellState.DEAD.value,
         CellState.RARE.value,
         CellState.MEDIUM.value,
@@ -52,6 +55,24 @@ class _GameState:
                 cls._instance = super().__new__(cls)
         return cls._instance
 
+    # Setting-related methods
+    @property
+    def values(self):
+        """Returns a read-only copy of the settings"""
+        return self._settings.copy()
+
+    def get_value(self, key):
+        """Returns the value for a key (None if not found)"""
+        return self._settings.get(key, None)
+
+    def set_value(self, key, new_value):
+        """Sets the value for a key (throws if not found)"""
+        if key in self._settings:
+            self._settings[key] = new_value
+        else:
+            raise KeyError(f"Key '{key}' not found in MyClass")
+    
+    # Generation-related methods
     @property
     def curr_gen(self):
         """Returns the current generation's cell matrix"""
@@ -64,7 +85,7 @@ class _GameState:
         self._prev_gens = []
         self._curr_gen = matrix
 
-    def generations_generator(self):
+    def generations_generator(self, num_of_generations: int, is_ghost_mode: bool = True):
         """
         Returns a generator for accessing each generation as the cells evolve
         """
@@ -72,11 +93,11 @@ class _GameState:
         border_top = f"╭{"┈┈" * self._curr_gen.cols}╮"
         border_bottom = f"╰{"┈┈" * self._curr_gen.cols}╯"
 
-        for _ in range(0, self.num_of_generations):
+        for _ in range(0, num_of_generations):
             self._get_next_generation()
             next_gen = (
                 self._combine_all_gens_as_str()
-                if self.is_ghost_mode
+                if is_ghost_mode
                 else self._curr_gen.as_str
             )
             
@@ -125,7 +146,7 @@ class _GameState:
 
         # Convert priorities back to corresponding cell states
         combined_matrix_cell_states: list[list[str]] = np.array(
-            self._priority_state_list
+            self._priority_order
         )[combined_matrix].tolist()
 
         as_str = "\n".join(["".join(row) for row in combined_matrix_cell_states])
@@ -134,17 +155,16 @@ class _GameState:
 
     def _cell_to_priority(self, value: str) -> int:
         """
-        Maps a cell state to its priority over other cell states
+        Maps a cell state value to its priority over other cell states values
 
-        Priority = (highest -> lowest / cell states dead -> alive)
+        Priority = (lowest -> highest / dead -> alive)
         """
         priority = -1  # assume not in list
 
-        if value in self._priority_state_list:
-            priority = self._priority_state_list.index(value)
+        if value in self._priority_order:
+            priority = self._priority_order.index(value)
 
         return priority
-
 
 # Python modules are singletons by nature ∴ we can import the following.
 # Singletons are often argued to be an anti-pattern and globals suck but

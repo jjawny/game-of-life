@@ -3,7 +3,6 @@ from argparse import ArgumentParser
 from src.constants import constants
 from src.utils.arg_validators import (
     parse_rule_type,
-    parse_step_type,
     parse_wrap_type,
     parse_ghost_type,
     parse_radius_type,
@@ -11,7 +10,7 @@ from src.utils.arg_validators import (
     parse_dimension_type,
     parse_generations_type,
     parse_neighbourhood_type,
-    parse_updates_per_second_type,
+    parse_updates_per_s_type,
 )
 
 
@@ -45,7 +44,7 @@ class ArgParserWrapper(ArgumentParser):
         self.add_argument(
             "-u",
             "--updates-per-second",
-            type=parse_updates_per_second_type,
+            type=parse_updates_per_s_type,
             default=constants.DEFAULT_UPDATES_PER_S,
             metavar="count",
             help="Refresh rate for num of generations per second",
@@ -55,7 +54,7 @@ class ArgParserWrapper(ArgumentParser):
             "--ghost",
             type=parse_ghost_type,
             default=constants.DEFAULT_IS_GHOST_MODE,
-            metavar="'yes' or 'no'",
+            metavar="'true' or 'false'",
             help="Toggle ghost mode (older generations fading away)",
         )
 
@@ -64,17 +63,8 @@ class ArgParserWrapper(ArgumentParser):
             "--wrap",
             type=parse_wrap_type,
             default=constants.DEFAULT_IS_WRAP_MODE,
-            metavar="'yes' or 'no'",
+            metavar="'true' or 'false'",
             help="Toggle wrap mode (neighbourhoods wrap around matrix bounds)",
-        )
-
-        self.add_argument(
-            "-s",
-            "--step",
-            type=parse_step_type,
-            default=constants.DEFAULT_IS_STEP_MODE,
-            metavar="'yes' or 'no'",
-            help="Toggle step mode (press space to iterate through simulation)",
         )
 
         self.add_argument(
