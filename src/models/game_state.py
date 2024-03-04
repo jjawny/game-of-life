@@ -68,6 +68,10 @@ class _GameState:
         """
         Returns a generator for accessing each generation as the cells evolve
         """
+        border_sides = "┊{}┊".format
+        border_top = f"╭{"┈┈" * self._curr_gen.cols}╮"
+        border_bottom = f"╰{"┈┈" * self._curr_gen.cols}╯"
+
         for _ in range(0, self.num_of_generations):
             self._get_next_generation()
             next_gen = (
@@ -75,8 +79,12 @@ class _GameState:
                 if self.is_ghost_mode
                 else self._curr_gen.as_str
             )
-
-            yield next_gen
+            
+            # Add border - TODO: turn into option?
+            next_gen_w_side_borders = '\n'.join(border_sides(line) for line in next_gen.split('\n'))
+            next_gen_w_all_borders = "{}\n{}\n{}".format(border_top, next_gen_w_side_borders, border_bottom)
+            
+            yield next_gen_w_all_borders
 
     def _get_next_generation(self):
         """
