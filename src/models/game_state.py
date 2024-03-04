@@ -18,6 +18,8 @@ class _GameState:
     is_ghost_mode: bool = constants.DEFAULT_IS_GHOST_MODE
     is_wrap_mode: bool = constants.DEFAULT_IS_WRAP_MODE
     num_of_generations: int = constants.DEFAULT_NUM_OF_GENERATIONS
+    survival_rule: set = constants.DEFAULT_SURVIVAL_RULE
+    resurrection_rule: set = constants.DEFAULT_RESURRECTION_RULE
 
     # State of cells
     _curr_gen: CellMatrix = CellMatrix()

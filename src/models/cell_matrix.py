@@ -4,7 +4,10 @@ from src.constants import constants
 
 
 class CellMatrix:
-    """Represents a single matrix of cells"""
+    """
+    Represents a single matrix of cells:
+        - TODO: write about the params, same about game-state
+    """
 
     # Dev notes:
     #   - When designing algos, remember code matrices are traversed rows first (Y-axis) before cols (X-axis)
@@ -27,11 +30,13 @@ class CellMatrix:
         cols: int = constants.DEFAULT_DIMENSION_X,
         rows: int = constants.DEFAULT_DIMENSION_Y,
         is_wrap: bool = constants.DEFAULT_IS_WRAP_MODE,
+        survival_rule: set = constants.DEFAULT_SURVIVAL_RULE,
+        resurrection_rule: set = constants.DEFAULT_RESURRECTION_RULE,
         seed: list[tuple[int, int]] = [],
     ):
         # Assign params to state
-        self._survive_rule = {2, 3}
-        self._resurrect_rule = {3}
+        self._survive_rule = survival_rule
+        self._resurrect_rule = resurrection_rule
         self._is_wrap = is_wrap
 
         # Setup initial state

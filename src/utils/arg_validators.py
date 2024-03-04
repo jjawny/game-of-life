@@ -2,7 +2,7 @@ from argparse import ArgumentTypeError
 from src.constants import constants
 
 
-def valid_dimension_type(value: str) -> int:
+def parse_dimension_type(value: str) -> int:
     """Throws if dimension value is not valid"""
     try:
         dimension = int(value)  # throws ValueError if type cast fails
@@ -17,7 +17,7 @@ def valid_dimension_type(value: str) -> int:
         raise ArgumentTypeError("Dimensions must be integers")
 
 
-def valid_generations_type(value: str) -> int:
+def parse_generations_type(value: str) -> int:
     """Throws if generations is not valid"""
     try:
         generations = int(value)
@@ -32,7 +32,7 @@ def valid_generations_type(value: str) -> int:
         raise ArgumentTypeError("Generations must be an integer")
 
 
-def valid_updates_per_second_type(value: str) -> int:
+def parse_updates_per_second_type(value: str) -> int:
     """Throws if updates per second is not valid"""
     try:
         updates = int(value)
@@ -47,12 +47,35 @@ def valid_updates_per_second_type(value: str) -> int:
         raise ArgumentTypeError("Updates per second must be an integer")
 
 
-def valid_ghost_type(value: str) -> bool:
+def parse_rule_type(values: str):
+    """
+    - Given numbers comma separated, returns a set of those parsed numbers
+    - Throws if any number is not an integer
+    - Throws if any number is not in bounds
+    """
+    is_in_bounds = lambda val: constants.MIN_RULE <= val <= constants.MAX_RULE
+
+    try:
+        rule_numbers = {int(val.strip()) for val in values.split(",")}
+        rule_numbers_in_bounds = set(filter(is_in_bounds, rule_numbers))
+
+        # If any num of rules were not in bounds
+        if len(rule_numbers_in_bounds) < len(rule_numbers):
+            raise ArgumentTypeError(
+                f"Rule numbers must be {constants.MIN_RULE}..{constants.MAX_RULE} inclusive"
+            )
+
+        return rule_numbers
+    except ValueError:
+        raise ArgumentTypeError(f"Rule numbers must be (comma separated) integers")
+
+
+def parse_ghost_type(value: str) -> bool:
     """Returns the parsed value"""
     return _parse_yes_or_no(value, "Ghost mode")
 
 
-def valid_wrap_type(value: str) -> bool:
+def parse_wrap_type(value: str) -> bool:
     """Returns the parsed value"""
     return _parse_yes_or_no(value, "Wrap mode")
 
@@ -64,4 +87,4 @@ def _parse_yes_or_no(value: str, arg_name: str = "Argument") -> bool:
     if v in (y, n):
         return v == y
     else:
-        raise ArgumentTypeError(f"{arg_name} must be 'yes' or 'no'")
+        raise ArgumentTypeError(f"{arg_name} must be '{y}' or '{n}'")

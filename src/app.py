@@ -5,7 +5,6 @@ from src.models.arg_parser_wrapper import ArgParserWrapper
 from src.models.cell_matrix import CellMatrix
 from src.models.game_state import game_state
 
-from typing import List
 from time import sleep
 
 
@@ -29,6 +28,8 @@ def apply_initial_settings():
     game_state.updates_per_s = args.updates_per_second
     game_state.is_ghost_mode = args.ghost
     game_state.is_wrap_mode = args.wrap
+    game_state.survival_rule = args.survival_rule
+    game_state.resurrection_rule = args.resurrection_rule
 
 
 def render_main_menu():
@@ -53,6 +54,8 @@ def simulate():
         rows=game_state.rows,
         seed=glider,
         is_wrap=game_state.is_wrap_mode,
+        survival_rule=game_state.survival_rule,
+        resurrection_rule=game_state.resurrection_rule,
     )
     game_state.assign_new_cell_matrix(initial_matrix)
 
