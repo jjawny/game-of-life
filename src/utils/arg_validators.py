@@ -129,6 +129,11 @@ def parse_wrap_type(value: str) -> bool:
     return _parse_yes_or_no(value, "Wrap mode")
 
 
+def parse_step_type(value: str) -> bool:
+    """Returns the parsed value"""
+    return _parse_yes_or_no(value, "Step mode")
+
+
 def _parse_yes_or_no(value: str, arg_name: str = "Argument") -> bool:
     """Throws if value is not 'yes' or 'no'"""
     y, n, v = "yes", "no", value.lower()

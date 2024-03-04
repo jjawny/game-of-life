@@ -18,6 +18,7 @@ class _GameState:
     random: int = constants.DEFAULT_RANDOM
     is_wrap_mode: bool = constants.DEFAULT_IS_WRAP_MODE
     is_ghost_mode: bool = constants.DEFAULT_IS_GHOST_MODE
+    is_step_mode: bool = constants.DEFAULT_IS_STEP_MODE
     updates_per_s: int = constants.DEFAULT_UPDATES_PER_S
     num_of_generations: int = constants.DEFAULT_NUM_OF_GENERATIONS
     survival_rule: set = constants.DEFAULT_SURVIVAL_RULE

@@ -16,7 +16,7 @@ def apply_initial_settings():
     """Applies the initial settings from CLI args"""
     # Parse
     parser = ArgParserWrapper(
-        description="Settings",
+        description="Custom game settings",
         epilog="A speedrun by Johnny Madigan ─=≡Σ(((╯°□°)╯",
     )
     parser.add_game_of_life_args()
@@ -28,6 +28,7 @@ def apply_initial_settings():
     game_state.updates_per_s = args.updates_per_second
     game_state.is_ghost_mode = args.ghost
     game_state.is_wrap_mode = args.wrap
+    game_state.is_step_mode = args.step
     game_state.survival_rule = args.survival_rule
     game_state.resurrection_rule = args.resurrection_rule
     game_state.random = args.random

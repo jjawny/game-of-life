@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 from src.constants import constants
 from src.utils.arg_validators import (
     parse_rule_type,
+    parse_step_type,
     parse_wrap_type,
     parse_ghost_type,
     parse_radius_type,
@@ -19,6 +20,8 @@ class ArgParserWrapper(ArgumentParser):
         """
         Purpose: to bulk-add all arguments in the context of the Game of Life application
         """
+
+        # FYI: order adding arguments = order they show up in help doc
 
         self.add_argument(
             "-d",
@@ -63,6 +66,15 @@ class ArgParserWrapper(ArgumentParser):
             default=constants.DEFAULT_IS_WRAP_MODE,
             metavar="'yes' or 'no'",
             help="Toggle wrap mode (neighbourhoods wrap around matrix bounds)",
+        )
+
+        self.add_argument(
+            "-s",
+            "--step",
+            type=parse_step_type,
+            default=constants.DEFAULT_IS_STEP_MODE,
+            metavar="'yes' or 'no'",
+            help="Toggle step mode (press space to iterate through simulation)",
         )
 
         self.add_argument(
