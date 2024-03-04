@@ -118,3 +118,10 @@ class ArgParserWrapper(ArgumentParser):
             metavar="size",
             help="Radius a.k.a size of neighbourhood",
         )
+
+        # self.add_argument(
+        #     "--gif",
+        #      #type=parse_radius_type,
+        #     #default=constants.DEFAULT_RADIUS,
+        #     help="Will export simulation as GIF",
+        # )
