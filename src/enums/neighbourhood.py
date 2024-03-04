@@ -1,6 +1,6 @@
 from enum import Enum
 
 
-class Neighbourhoods(Enum):
+class Neighbourhood(Enum):
     MOORE = 1
     VON_NEUMANN = 2

@@ -1,3 +1,4 @@
+from src.enums.neighbourhood import Neighbourhood
 from argparse import ArgumentTypeError
 from src.constants import constants
 
@@ -83,6 +84,39 @@ def parse_random_type(value: str) -> int:
         return random
     except ValueError:
         raise ArgumentTypeError("Random % must be an integer")
+
+
+def parse_neighbourhood_type(value: str) -> Neighbourhood:
+    """Throws if neighbourhood type is not valid"""
+
+    moore, von = "m", "v"
+
+    # Use a set to leverage # table complexity (O(1))
+    if value not in {moore, von}:
+        raise ArgumentTypeError(f"Neighbourhood must be '{moore}' or '{von}'")
+
+    match value:
+        case "m":
+            return Neighbourhood.MOORE
+        case "v":
+            return Neighbourhood.VON_NEUMANN
+        case _:
+            raise ArgumentTypeError("Neighbourhood not supported yet")
+
+
+def parse_radius_type(value: str) -> int:
+    """Throws if radius is not valid"""
+    try:
+        radius = int(value)
+
+        if not (constants.MIN_RADIUS <= radius <= constants.MAX_RADIUS):
+            raise ArgumentTypeError(
+                f"Radius must be {constants.MIN_RADIUS}..{constants.MAX_RADIUS} inclusive"
+            )
+
+        return radius
+    except ValueError:
+        raise ArgumentTypeError("Radius must be an integer")
 
 
 def parse_ghost_type(value: str) -> bool:

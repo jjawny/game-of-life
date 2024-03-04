@@ -5,9 +5,11 @@ from src.utils.arg_validators import (
     parse_rule_type,
     parse_wrap_type,
     parse_ghost_type,
+    parse_radius_type,
     parse_random_type,
     parse_dimension_type,
     parse_generations_type,
+    parse_neighbourhood_type,
     parse_updates_per_second_type,
 )
 
@@ -86,4 +88,21 @@ class ArgParserWrapper(ArgumentParser):
             default=constants.DEFAULT_RANDOM,
             metavar="%",
             help="Chance (out of 100%%) for a cell to be alive initially",
+        )
+
+        self.add_argument(
+            "-n",
+            "--neighbourhood",
+            type=parse_neighbourhood_type,
+            default=constants.DEFAULT_NEIGHBOURHOOD,
+            metavar="type",
+            help="Type of neighbourhood: 'm' for Moore, 'v' for VonNeumann",
+        )
+
+        self.add_argument(
+            "--radius",
+            type=parse_radius_type,
+            default=constants.DEFAULT_RADIUS,
+            metavar="size",
+            help="Radius a.k.a size of neighbourhood",
         )

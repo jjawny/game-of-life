@@ -31,6 +31,8 @@ def apply_initial_settings():
     game_state.survival_rule = args.survival_rule
     game_state.resurrection_rule = args.resurrection_rule
     game_state.random = args.random
+    game_state.neighbourhood = args.neighbourhood
+    game_state.radius = args.radius
 
 
 def render_main_menu():
@@ -58,6 +60,8 @@ def simulate():
         survival_rule=game_state.survival_rule,
         resurrection_rule=game_state.resurrection_rule,
         random=game_state.random,
+        neighbourhood=game_state.neighbourhood,
+        radius=game_state.radius,
     )
     game_state.assign_new_cell_matrix(initial_matrix)
 

@@ -1,6 +1,7 @@
 import threading
 import numpy as np
 
+from src.enums.neighbourhood import Neighbourhood
 from src.models.cell_matrix import CellMatrix
 from src.enums.cell_state import CellState
 from src.constants import constants
@@ -14,13 +15,15 @@ class _GameState:
     # Settings
     cols: int = constants.DEFAULT_DIMENSION_X
     rows: int = constants.DEFAULT_DIMENSION_Y
-    updates_per_s: int = constants.DEFAULT_UPDATES_PER_S
-    is_ghost_mode: bool = constants.DEFAULT_IS_GHOST_MODE
+    random: int = constants.DEFAULT_RANDOM
     is_wrap_mode: bool = constants.DEFAULT_IS_WRAP_MODE
+    is_ghost_mode: bool = constants.DEFAULT_IS_GHOST_MODE
+    updates_per_s: int = constants.DEFAULT_UPDATES_PER_S
     num_of_generations: int = constants.DEFAULT_NUM_OF_GENERATIONS
     survival_rule: set = constants.DEFAULT_SURVIVAL_RULE
     resurrection_rule: set = constants.DEFAULT_RESURRECTION_RULE
-    random: int = constants.DEFAULT_RANDOM
+    neighbourhood: Neighbourhood = constants.DEFAULT_NEIGHBOURHOOD
+    radius: int = constants.DEFAULT_RADIUS
 
     # State of cells
     _curr_gen: CellMatrix = CellMatrix()

@@ -1,6 +1,6 @@
 import random
 
-from src.enums.neighbourhoods import Neighbourhoods
+from src.enums.neighbourhood import Neighbourhood
 from src.enums.cell_state import CellState
 from src.constants import constants
 
@@ -35,6 +35,8 @@ class CellMatrix:
         is_wrap: bool = constants.DEFAULT_IS_WRAP_MODE,
         survival_rule: set = constants.DEFAULT_SURVIVAL_RULE,
         resurrection_rule: set = constants.DEFAULT_RESURRECTION_RULE,
+        neighbourhood: Neighbourhood = constants.DEFAULT_NEIGHBOURHOOD,
+        radius: int = constants.DEFAULT_RADIUS,
         seed: list[tuple[int, int]] = [],
     ):
         # Assign params to state
@@ -43,6 +45,8 @@ class CellMatrix:
         self._is_wrap = is_wrap
         self._survive_rule = survival_rule
         self._resurrect_rule = resurrection_rule
+        self._neighbourhood = neighbourhood
+        self._radius = radius
 
         # Setup initial state
         self._ghost_generations: list[list[str]] = []
@@ -142,11 +146,7 @@ class CellMatrix:
         is_alive = False
         host_x, host_y = host_cell[0], host_cell[1]
         host_cell_state = self._matrix[host_y][host_x]
-        num_of_alive_neighbours = len(
-            self._get_alive_neighbours(
-                host_cell=host_cell, type=Neighbourhoods.MOORE, radius=1
-            )
-        )
+        num_of_alive_neighbours = len(self._get_alive_neighbours(host_cell=host_cell))
 
         match host_cell_state:
             case CellState.ALIVE.value:
@@ -162,9 +162,7 @@ class CellMatrix:
 
         return is_alive
 
-    def _get_alive_neighbours(
-        self, host_cell: tuple[int, int], type: Neighbourhoods, radius: int = 1
-    ) -> set[tuple[int, int]]:
+    def _get_alive_neighbours(self, host_cell: tuple[int, int]) -> set[tuple[int, int]]:
         """
         Determines the neighbourhood (regardless of cell state) within the bounds/context of the game:
          - Gets the neighbours based on type and radius
@@ -173,11 +171,11 @@ class CellMatrix:
         all_neighbours: set[tuple[int, int]] = set()
         alive_neighbours: set[tuple[int, int]] = set()
 
-        match type:
-            case Neighbourhoods.MOORE:
-                all_neighbours = self._get_moore_neighbourhood(host_cell, radius)
-            case Neighbourhoods.VON_NEUMANN:
-                all_neighbours = self._get_von_neumann_neighbourhood(host_cell, radius)
+        match self._neighbourhood:
+            case Neighbourhood.MOORE:
+                all_neighbours = self._get_moore_neighbourhood(host_cell)
+            case Neighbourhood.VON_NEUMANN:
+                all_neighbours = self._get_von_neumann_neighbourhood(host_cell)
             case _:
                 pass
 
@@ -196,7 +194,7 @@ class CellMatrix:
         return alive_neighbours
 
     def _get_von_neumann_neighbourhood(
-        self, host_cell: tuple[int, int], radius: int = 1
+        self, host_cell: tuple[int, int]
     ) -> set[tuple[int, int]]:
         """
         Calculates the Von Neumann neighbours surrounding a given host cell
@@ -206,15 +204,12 @@ class CellMatrix:
         - Is not responsible for excluding neighbours out of bounds
         - Does not save the host cell
         """
-        if radius < 0:
-            raise ValueError("Radius must be >= 0")
-
         host_x, host_y = host_cell
 
-        lower_x = host_x - radius
-        upper_x = host_x + radius
-        lower_y = host_y - radius
-        upper_y = host_y + radius
+        lower_x = host_x - self._radius
+        upper_x = host_x + self._radius
+        lower_y = host_y - self._radius
+        upper_y = host_y + self._radius
 
         # ALGO SUMMARY TO ACHIEVE VON NEUMANN:
         #   - Get lists holding all 'Y' coords:
@@ -255,7 +250,7 @@ class CellMatrix:
         return neighbours
 
     def _get_moore_neighbourhood(
-        self, host_cell: tuple[int, int], radius: int = 1
+        self, host_cell: tuple[int, int]
     ) -> set[tuple[int, int]]:
         """
         Calculates the Moore neighbours surrounding a given host cell
@@ -264,15 +259,12 @@ class CellMatrix:
         - Is not responsible for excluding neighbours out of bounds
         - Does not save the host cell
         """
-        if radius < 0:
-            raise ValueError("Radius must be >= 0")
-
         hostX, hostY = host_cell
 
-        lowerX = hostX - radius
-        upperX = hostX + radius
-        lowerY = hostY - radius
-        upperY = hostY + radius
+        lowerX = hostX - self._radius
+        upperX = hostX + self._radius
+        lowerY = hostY - self._radius
+        upperY = hostY + self._radius
 
         neighbours: set[tuple[int, int]] = set()
 
