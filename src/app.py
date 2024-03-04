@@ -1,5 +1,6 @@
 import os
 import sys
+import math
 
 from src.models.arg_parser_wrapper import ArgParserWrapper
 from src.models.cell_matrix import CellMatrix
@@ -40,6 +41,34 @@ def render_main_menu():
     """Renders the main menu and reads user inputs"""
     ...
 
+
+def print_banner():
+    lines = [
+        r"               .---.  .----. .-.   "
+        r"              /   __}/  {}  \| |   "
+        r"              \  {_ }\      /| `--."
+        r"               `---'  `----' `----'"
+        r"               GAME     of    LIFE "
+        r"                by Johnny Madigan  "
+    ]
+
+    for line in lines:
+        print(line)
+        sleep(5)
+
+
+def print_banner_static(offset: int = 0):
+    '''Print banner and optionally offset (based on center)'''
+    offset_centered = offset - 11 # current chars from start to middle
+    offset_str = ' ' * offset_centered
+
+    print(f"{offset_str}{r" .---.  .----. .-."}")
+    print(f"{offset_str}{r"/   __}/  {}  \| |"}")
+    print(f"{offset_str}{r"\  {_ }\      /| `--."}")
+    print(f"{offset_str}{r" `---'  `----' `----'"}")
+    print(f"{offset_str}{r" GAME     of    LIFE"}")
+
+    # 11 -> right = center of banner, we have the center of grid available so move banner to start from center (-11 to bring back to middle)
 
 def simulate():
     """Starts the simulation based on the settings"""
