@@ -2,15 +2,28 @@ import os
 import sys
 import math
 
+from time import sleep
+
 from src.models.arg_parser_wrapper import ArgParserWrapper
 from src.models.cell_matrix import CellMatrix
 from src.models.game_state import game_state
+from src.utils.terminal_utils import (
+    print_banner,
+    print_generation_count_footer,
+    clear_screen,
+)
 
-from time import sleep
+
+# def on_spacebar_release(key):
+#     """
+#     - Returns false if spacebar was pressed and released
+#     - When used as pynput's callbacks, will signal to stop listening
+#     """
+#     if key == keyboard.Key.space:
+#         spacebar_listener.stop()
 
 
-def clear_screen():
-    os.system("cls" if os.name == "nt" else "clear")
+# spacebar_listener = keyboard.Listener(on_release=on_spacebar_release)
 
 
 def apply_initial_settings():
@@ -41,34 +54,6 @@ def render_main_menu():
     """Renders the main menu and reads user inputs"""
     ...
 
-
-def print_banner():
-    lines = [
-        r"               .---.  .----. .-.   "
-        r"              /   __}/  {}  \| |   "
-        r"              \  {_ }\      /| `--."
-        r"               `---'  `----' `----'"
-        r"               GAME     of    LIFE "
-        r"                by Johnny Madigan  "
-    ]
-
-    for line in lines:
-        print(line)
-        sleep(5)
-
-
-def print_banner_static(offset: int = 0):
-    '''Print banner and optionally offset (based on center)'''
-    offset_centered = offset - 11 # current chars from start to middle
-    offset_str = ' ' * offset_centered
-
-    print(f"{offset_str}{r" .---.  .----. .-."}")
-    print(f"{offset_str}{r"/   __}/  {}  \| |"}")
-    print(f"{offset_str}{r"\  {_ }\      /| `--."}")
-    print(f"{offset_str}{r" `---'  `----' `----'"}")
-    print(f"{offset_str}{r" GAME     of    LIFE"}")
-
-    # 11 -> right = center of banner, we have the center of grid available so move banner to start from center (-11 to bring back to middle)
 
 def simulate():
     """Starts the simulation based on the settings"""
@@ -102,10 +87,14 @@ def simulate():
     # Print initial cells
     print(game_state.curr_gen.as_str)
 
-    for g in generations:
+    for idx, gen in enumerate(generations):
+        # keyboard.wait('space') if game_state.is_step_mode: else sleep(delay_s)
         sleep(delay_s)
         clear_screen()
-        print(g)
+        offset = math.floor(len(gen.split("\n")[0]) / 2)
+        print_banner(offset)
+        print(gen)
+        print_generation_count_footer(idx, offset)
 
 
 def main() -> None:
