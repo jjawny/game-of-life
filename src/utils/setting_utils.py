@@ -3,34 +3,22 @@ from src.models.setting import Setting
 from src.constants import constants
 
 
-def get_settings(args: dict):
-    """Renders the main menu and reads user inputs"""
+def get_settings(args: dict[str, object]) -> list[Setting]:
+    """Creates a fixed list of setting objects based on dictionary of args"""
 
     # User-friendly values will be converted back to proper value when parsed
     user_friendly_default_neighbourhood = constants.DEFAULT_NEIGHBOURHOOD.value
-    user_friendly_neighbourhood = args.get(
-        "neighbourhood", constants.DEFAULT_NEIGHBOURHOOD.value
-    )
+    user_friendly_neighbourhood = args.get("neighbourhood", constants.DEFAULT_NEIGHBOURHOOD.value)
+    user_friendly_default_survival_rule = ",".join(map(str, constants.DEFAULT_SURVIVAL_RULE))
+    user_friendly_survival_rule = args.get("survival_rule", constants.DEFAULT_SURVIVAL_RULE)
+    user_friendly_default_resurrection_rule = ",".join(map(str, constants.DEFAULT_RESURRECTION_RULE))
+    user_friendly_resurrection_rule = args.get("resurrection_rule", constants.DEFAULT_RESURRECTION_RULE)
 
-    user_friendly_default_survival_rule = ",".join(
-        map(str, constants.DEFAULT_SURVIVAL_RULE)
-    )
-    user_friendly_survival_rule = args.get(
-        "survival_rule", constants.DEFAULT_SURVIVAL_RULE
-    )
     if isinstance(user_friendly_survival_rule, set):
-        converted = ",".join(map(str, user_friendly_survival_rule))
-        user_friendly_survival_rule = converted
+        user_friendly_survival_rule = ",".join(map(str, user_friendly_survival_rule))
 
-    user_friendly_default_resurrection_rule = ",".join(
-        map(str, constants.DEFAULT_RESURRECTION_RULE)
-    )
-    user_friendly_resurrection_rule = args.get(
-        "resurrection_rule", constants.DEFAULT_RESURRECTION_RULE
-    )
     if isinstance(user_friendly_resurrection_rule, set):
-        converted = ",".join(map(str, user_friendly_resurrection_rule))
-        user_friendly_resurrection_rule = converted
+        user_friendly_resurrection_rule = ",".join(map(str, user_friendly_resurrection_rule))
 
     # Create the settings w fallback default values
     res: list[Setting] = [
