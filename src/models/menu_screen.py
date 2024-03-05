@@ -1,4 +1,4 @@
-from src.utils.terminal_utils import get_banner
+from src.utils.string_utils import get_banner
 from src.models.setting import Setting
 import curses
 
@@ -62,9 +62,10 @@ class MenuScreen:
     def _is_final_callback_ready(self):
         """Confirms the settings are ready to inject into final callback"""
         is_confirmed = self._num_of_consecutive_spacebars >= self._SPACEBARS_TO_EXIT
+        is_not_editing = self._temporary_input == ""
         is_all_values_valid = all(opt.is_value_valid() for opt in self._settings)
 
-        return is_confirmed and is_all_values_valid
+        return is_confirmed and is_all_values_valid and is_not_editing
 
     def _render_screen(self, screen: curses.window):
         """
@@ -140,12 +141,15 @@ class MenuScreen:
         warning_msg = "Please fix errors to start"
         start_msg = "Space + Space to start"
         exit_msg = "Ctrl + C to exit"
+        editing_msg = "Finish editing to start"
         center_len = 44
 
         screen.addstr(f"{selected_opt_helper_text}".center(center_len))
         screen.addstr("\n")
 
-        if any(not opt.is_value_valid() for opt in self._settings):
+        if self._temporary_input:
+            screen.addstr(editing_msg.center(center_len), self._EDIT_COLOR)
+        elif any(not opt.is_value_valid() for opt in self._settings):
             screen.addstr(warning_msg.center(center_len), self._ERROR_COLOR)
         else:
             screen.addstr(start_msg.center(center_len), self._DISABLED_COLOR)
