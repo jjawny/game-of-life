@@ -1,6 +1,7 @@
 from src.utils.string_utils import get_banner
 from src.models.setting import Setting
 import curses
+import re
 
 
 class MenuScreen:
@@ -201,7 +202,10 @@ class MenuScreen:
         num_of_settings = len(self._settings)
         num_of_fixed_options = len(selected_setting.possible_values)
         is_fixed_options = True if selected_setting.possible_values else False
-        is_alphanumeric = lambda key: isinstance(key, str) and key.isalnum()
+        is_valid_input = (
+            lambda key: isinstance(key, str)
+            and re.match(r"^[a-zA-Z0-9,]+$", key) is not None
+        )
 
         # SPACES: Always handle
         if key == ord(" "):
@@ -249,7 +253,7 @@ class MenuScreen:
                     self._clear_temporary_input()
             # ALPHANUM INPUT
             case _:
-                if not is_fixed_options and is_alphanumeric(chr(key)):
+                if not is_fixed_options and is_valid_input(chr(key)):
                     self._temporary_input += chr(key)
                     self._temporary_input.strip()
 
