@@ -95,8 +95,8 @@ class ArgParserWrapper(ArgumentParser):
         self.add_argument(
             "-n",
             "--neighbourhood",
-            type=parse_neighbourhood_type,
-            default=constants.DEFAULT_NEIGHBOURHOOD,
+            type=str,
+            default=constants.DEFAULT_NEIGHBOURHOOD.value,
             metavar="type",
             help="Type of neighbourhood: 'm' for Moore, 'v' for VonNeumann",
         )

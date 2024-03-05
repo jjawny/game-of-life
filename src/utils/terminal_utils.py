@@ -15,6 +15,27 @@ def print_banner(offset: int = 0):
     print(f"{offset_str}{r" GAME     of    LIFE"}")
     print(f"{offset_str}{r"  by Johnny Madigan"}")
 
+
+def get_banner(offset: int = 0):
+    """
+    - Gets the full banner as a single string 
+    - Optional offset (will auto center)
+    """
+
+    offset_str = ' ' * max(0, offset - 11) # 11 = current chars from start to middle
+    
+    lines = [
+        r" .---.  .----. .-.",
+        r"/   __}/  {}  \| |",
+        r"\  {_ }\      /| `--.",
+        r" `---'  `----' `----'",
+        r" GAME     of    LIFE",
+        r"  by Johnny Madigan"
+    ]
+
+    res = "\n".join([f"{offset_str}{line}" for line in lines])
+    return res
+
 def print_generation_count_footer(count: int, offset: int = 0):
 
     """Prints the generation count footer line w optional offset (will auto center)"""
@@ -22,8 +43,3 @@ def print_generation_count_footer(count: int, offset: int = 0):
     offset_str = ' ' * max(0, offset - 8) # 8 = current chars from start to middle
 
     print(f"{offset_str}Generation #{count}")
-
-def print_exit_footer(offset: int = 0):
-    """Prints the exit footer"""
-    offset_str = ' ' * max(0, offset - 8) # 8 = current chars from start to middle
-    print(f"{offset_str}Ctrl+C to exit")

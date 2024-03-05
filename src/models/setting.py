@@ -15,24 +15,22 @@ class Setting:
         value,
         parse_value_callback: Callable,
         possible_values: list = [],
+        helper_text: str = "",
     ):
         self._display_name = display_name
         self._name = name
         self._value = value
         self._parse_value_callback = parse_value_callback
         self._possible_values = possible_values
-        # helper text for footer?
-
-    def is_value_valid(self):
-        try:
-            res = self._parse_value_callback(self._value)
-            return True if res is not None else False
-        except Exception as _:
-            return False
+        self._helper_text = helper_text
 
     @property
     def display_name(self) -> str:
         return self._display_name
+
+    @property
+    def helper_text(self) -> str:
+        return self._helper_text
 
     @property
     def name(self) -> str:
@@ -47,10 +45,17 @@ class Setting:
         return self._value
 
     @value.setter
-    def value(self, new_value):
+    def value(self, new_value) -> None:
         self._value = new_value
 
-    def parse_value(self):
+    def is_value_valid(self):
+        try:
+            res = self._parse_value_callback(self._value)
+            return True if res is not None else False
+        except Exception as _:
+            return False
+
+    def parse_value(self) -> bool:
         """
         - Attempts to parse the current value
         - True if success, false otherwise

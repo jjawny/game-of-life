@@ -1,9 +1,6 @@
-import os
-import sys
 import math
 
 from time import sleep
-import keyboard
 
 from src.models.arg_parser_wrapper import ArgParserWrapper
 from src.models.cell_matrix import CellMatrix
@@ -11,11 +8,11 @@ from src.models.game_state import game_state
 from src.models.main_menu import MainMenu
 from src.models.setting import Setting
 from src.utils.terminal_utils import (
+    clear_screen,
     print_banner,
     print_generation_count_footer,
-    clear_screen,
-    print_exit_footer,
 )
+from src.constants import constants
 
 from src.utils.arg_validators import (
     pparse_dimension_type,
@@ -62,24 +59,28 @@ def testing_main_menu():
             name="cols",
             value=opts["cols"],
             parse_value_callback=pparse_dimension_type,
+            helper_text=f"Matrix height/rows {constants.MIN_DIMENSION}..{constants.MAX_DIMENSION} inclusive",
         ),
         Setting(
             display_name="Dimension Y",
             name="rows",
             value=opts["rows"],
             parse_value_callback=pparse_dimension_type,
+            helper_text=f"Matrix width/cols {constants.MIN_DIMENSION}..{constants.MAX_DIMENSION} inclusive",
         ),
         Setting(
             display_name="Random %",
             name="random",
             value=opts["random"],
             parse_value_callback=pparse_random_type,
+            helper_text=f"Chance for cell to start alive {constants.MIN_RANDOM}..{constants.MAX_RANDOM}% inclusive",
         ),
         Setting(
-            display_name="Num of generations",
+            display_name="Generations",
             name="generations",
             value=opts["num_of_generations"],
             parse_value_callback=pparse_generations_type,
+            helper_text=f"Number of generations {constants.MIN_GENERATIONS}..{constants.MAX_GENERATIONS} inclusive",
         ),
         Setting(
             display_name="Updates per second",
@@ -105,7 +106,7 @@ def testing_main_menu():
             display_name="Neighbourhood",
             name="neighbourhood",
             value=opts["neighbourhood"],
-            possible_values=["Moore", "Von Neumann"],
+            possible_values=["Moore", "VonNeumann"],
             parse_value_callback=pparse_neighbourhood_type,
         ),
         Setting(
@@ -163,27 +164,16 @@ def testing_final_callback(settings: list[Setting]):
     )
     delay_s = 1 / settings_dict["updates_per_s"]
 
-    # Print initial cells
+    # Print initial cells (TODO: does not include banner fix this)
     print(game_state.curr_gen.as_str)
-
-    offset = 0
+    offset = math.floor(len(game_state.curr_gen.as_str.split("\n")[0]) / 2)
 
     for idx, gen in enumerate(generations):
         sleep(delay_s)
         clear_screen()
-        offset = math.floor(len(gen.split("\n")[0]) / 2)
         print_banner(offset)
         print(gen)
         print_generation_count_footer(idx + 1, offset)
-
-    # PYNPUT BUG: will dump all key presses when program ends
-    # Tried flushing the buffer, supressing the output... issue persists
-    # Hack solution to exit gracefully: wait for KeyboardInterrupt (Ctrl+C) handled in main()
-    is_shown_footer = False
-    while True:
-        if not is_shown_footer:
-            print_exit_footer(offset)
-        sleep(1000)
 
 
 def main() -> None:
@@ -192,4 +182,6 @@ def main() -> None:
         apply_initial_settings()
         testing_main_menu()
     except KeyboardInterrupt:
-        "Exiting..."
+        print("Exiting...")
+    finally:
+        print("")

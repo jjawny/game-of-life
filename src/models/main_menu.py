@@ -1,18 +1,21 @@
+from src.utils.terminal_utils import get_banner
 from src.models.setting import Setting
-from src.utils.terminal_utils import print_banner, clear_screen
-from src.enums.color import Color
-from pynput import keyboard
 from typing import Callable
+import curses
 from time import sleep
 
 
 class MainMenu:
     """
-    The main menu
+    The main menu, built with curses module (will overlay the terminal w curses screen)
+
+    NOTE:
+        - This menu uses the 256 color range ∴ your terminal must be a 256-color terminal
+        - Check TERM environment variable, example: 'xterm-256color'
     """
 
     _SPACEBARS_TO_EXIT = 2
-    _num_of_consecutive_spacebar_presses = 0
+    _num_of_consecutive_spacebars = 0
     _temporary_input: str = ""
     _cursor_idx = 0
     _possible_option_indx = 0
@@ -37,150 +40,177 @@ class MainMenu:
         return self._options[self._cursor_idx]
 
     def render(self):
-        self._render()  # initial render
-
-        with keyboard.Listener(on_press=self._on_press, on_release=self._on_release) as listener:  # type: ignore
-            listener.join()
-
+        """
+        - Renders the main menu to configure options
+        - Listens for 'space space' which will then execute the callback w options
+        """
+        curses.wrapper(self._render_screen)
         self._final_callback(self._options)
 
-    def _render(self):
-        clear_screen()
-        print_banner(offset=23)
-        print("╭┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈·┈┈┈┈┈·┈ ┈┈ ┈ · ··")
-        self._render_options()
-        print("╰┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈·┈┈┈┈ ┈┈ · ┈ · ·")
+    def _is_final_callback_ready(self):
+        """Confirms the settings are ready to inject into final callback"""
+        is_confirmed = self._num_of_consecutive_spacebars >= self._SPACEBARS_TO_EXIT
+        is_all_values_valid = all(opt.is_value_valid() for opt in self._options)
 
-    def _on_press(self, key):
+        return is_confirmed and is_all_values_valid
+
+    def _render_screen(self, screen: curses.window):
+        """
+        Call with Curses wrapper to inject curses std screen obj (stdscr)
+        """
+
+        # Init curses and colors
+        curses.use_default_colors()  # !important
+
+        COLOR_GRAY = 244
+        COLOR_DEFAULT = -1
+        curses.init_pair(1, curses.COLOR_RED, COLOR_DEFAULT)
+        curses.init_pair(2, curses.COLOR_YELLOW, COLOR_DEFAULT)
+        curses.init_pair(3, COLOR_GRAY, COLOR_DEFAULT)
+        self._ERROR_COLOR = curses.color_pair(1)
+        self._EDIT_COLOR = curses.color_pair(2)
+        self._DISABLED_COLOR = curses.color_pair(3)
+
+        while not self._is_final_callback_ready():
+            screen.clear()
+            self._render_banner(screen)
+            self._render_options_section(screen)
+            self._render_footer(screen)
+            screen.refresh()
+
+            self._on_press(key=screen.getch())  # listen
+
+        # Called after confirming all setting values are valid
+        self._parse_all_setting_values()
+
+    def _render_banner(self, screen: curses.window):
+        screen.addstr("\n\n" + get_banner(offset=23) + "\n\n")
+
+    def _render_options_section(self, screen: curses.window):
+        """
+        - Highlights the selected option
+        - Displays disabled options
+        - Displays invalid options
+        - Displays edited options
+        """
+        screen.addstr(
+            "╭┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈·┈┈┈┈┈·┈ ┈┈ ┈ · ··\n", self._DISABLED_COLOR
+        )
+
+        opt_value_l_padding = 40
+
+        for idx, opt in enumerate(self._options):
+            opt_to_display = f"{opt.display_name}: {str(opt.value).rjust(opt_value_l_padding - len(opt.display_name))}"
+            is_selected_setting = idx == self._cursor_idx
+            style = curses.A_NORMAL
+
+            if is_selected_setting:
+                style |= curses.A_REVERSE
+
+            if is_selected_setting and self._temporary_input:
+                style |= self._EDIT_COLOR
+                new_display_name = f"* {opt.display_name}"
+                opt_to_display = f"{new_display_name}: {self._temporary_input.rjust(opt_value_l_padding - len(new_display_name))}"
+            elif self._is_disabled(opt):
+                style |= self._DISABLED_COLOR
+            elif not opt.is_value_valid():
+                style |= self._ERROR_COLOR
+
+            screen.addstr("┊ ", self._DISABLED_COLOR)  # side border
+            screen.addstr(f"{opt_to_display}\n", style)
+
+        screen.addstr(
+            "╰┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈·┈┈┈┈ ┈┈ · ┈ · ·\n", self._DISABLED_COLOR
+        )
+
+    def _render_footer(self, screen: curses.window):
+        """Renders the footer"""
+
+        selected_opt_helper_text = self._options[self._cursor_idx].helper_text
+        warning_msg = "Please fix errors to start"
+        start_msg = "Space + Space to start"
+        exit_msg = "Ctrl + C to exit"
+        center_len = 44
+
+        screen.addstr(f"{selected_opt_helper_text}".center(center_len))
+        screen.addstr("\n")
+
+        if any(not opt.is_value_valid() for opt in self._options):
+            screen.addstr(warning_msg.center(center_len), self._ERROR_COLOR)
+        else:
+            screen.addstr(start_msg.center(center_len), self._DISABLED_COLOR)
+
+        screen.addstr("\n")
+        screen.addstr(exit_msg.center(center_len), self._DISABLED_COLOR)
+        screen.addstr("\n")
+
+    def _on_press(self, key: int):
         """
         Handler for all key presses
-            - Manages state (temporary input, setting values)
-            - If the selected setting has fixed options, cycles through (<-, ->)
-            - All other selected settings accept alphanumeric inputs
-            - Temporary input is cleared when deleting or navigating to other settings (up, down)
-            - Press enter to apply the temporary input to the selected setting
+            - ⬅️ ➡️: If the selected setting has fixed options, cycles through
+            - ⬆️ ⬇️: Navigate through settings (temporary input is cleared)
+            - DELETE: Temporary input is cleared
+            - ENTER: Applies the temporary input to the selected setting
+            - SPACE+SPACE: to exit the menu loop
+            - APHANUM: For temporary input
         """
         selected_option = self.selected_option
         num_of_options = len(self._options)
         num_of_fixed_options = len(selected_option.possible_values)
         is_fixed_options = True if selected_option.possible_values else False
-        is_alphanumeric = (
-            lambda key: key is not None and hasattr(key, "char") and key.char.isalnum()
-        )
+        is_alphanumeric = lambda key: isinstance(key, str) and key.isalnum()
+
+        # SPACE: Handle separately
+        if key == 32:
+            self._num_of_consecutive_spacebars += 1
+        else:
+            self._num_of_consecutive_spacebars = 0
 
         match key:
-            case keyboard.Key.ctrl:
-                sleep(0.25)  # Give buffer time to Ctrl+C out
-            case keyboard.Key.up:
+            # ARROW KEYS
+            case curses.KEY_UP:
                 self._clear_temporary_input()
                 self._cursor_idx = (self._cursor_idx - 1) % num_of_options
-            case keyboard.Key.down:
+            case curses.KEY_DOWN:
                 self._clear_temporary_input()
                 self._cursor_idx = (self._cursor_idx + 1) % num_of_options
-            case keyboard.Key.left:
+            case curses.KEY_LEFT:
                 if is_fixed_options:
                     next_idx = (self._possible_option_indx - 1) % num_of_fixed_options
                     self._possible_option_indx = next_idx
                     self._temporary_input = selected_option.possible_values[next_idx]
-            case keyboard.Key.right:
+            case curses.KEY_RIGHT:
                 if is_fixed_options:
                     next_idx = (self._possible_option_indx + 1) % num_of_fixed_options
                     self._possible_option_indx = next_idx
                     self._temporary_input = selected_option.possible_values[next_idx]
-            case keyboard.Key.enter:
-                if self._temporary_input:
-                    selected_option.value = self._temporary_input
-                    self._clear_temporary_input()
-            case keyboard.Key.backspace | keyboard.Key.delete:
+            # DELETE KEYS
+            case 127 | curses.KEY_DC | curses.KEY_BACKSPACE:
                 if not is_fixed_options:
                     self._clear_temporary_input()
                     selected_option.value = ""
+            # ENTER KEYS
+            case 10 | 13 | curses.KEY_ENTER:
+                if self._temporary_input:
+                    selected_option.value = self._temporary_input
+                    self._clear_temporary_input()
+            # ALPHANUM INPUT
             case _:
-                if not is_fixed_options and is_alphanumeric(key):
-                    self._temporary_input += key.char
+                if not is_fixed_options and is_alphanumeric(chr(key)):
+                    self._temporary_input += chr(key)
                     self._temporary_input.strip()
-
-        self._render()  # re-render to reflect changes
-
-    def _on_release(self, key):
-        """
-        Handler for all key releases:
-            - 'Space + Space' to exit the menu loop and execute main callback
-        """
-
-        # Record spacebar presses
-        if key == keyboard.Key.space:
-            self._num_of_consecutive_spacebar_presses += 1
-        else:
-            self._num_of_consecutive_spacebar_presses = 0
-
-        # Key handling logic
-        match key:
-            case keyboard.Key.space:
-                if (
-                    self._num_of_consecutive_spacebar_presses >= self._SPACEBARS_TO_EXIT
-                    and self._parse_all_setting_values()
-                ):
-                    return False  # Stop the listener
-            case _:
-                pass
 
     def _clear_temporary_input(self):
         """Explicitly the temporary input"""
         self._temporary_input = ""
 
-    def _render_options(self):
-        """
-        - Highlights the selected option
-        - Displays disabled options as GRAY
-        - Displays invalid options as RED
-        - Priority highest to lowest: disabled, invalid
-        """
-        option_format = "┊ {}".format
-
-        for idx, opt in enumerate(self._options):
-            opt_to_display = f"{opt.display_name}: {opt.value}"
-            is_selected_setting = idx == self._cursor_idx
-            bg = Color.BG_HIGHLIGHT if is_selected_setting else None
-            fg = None
-
-            if self._is_disabled(opt):
-                fg = Color.FG_DISABLED
-            elif not opt.is_value_valid():
-                fg = Color.FG_ERROR
-
-            # Unsaved changes
-            if is_selected_setting and self._temporary_input:
-                if self._temporary_input:
-                    opt_to_display = f"* {opt.display_name}: {self._temporary_input}"
-
-            print(option_format(self._color_str(opt_to_display, bg, fg)))
-
-    def _color_str(
-        self, string: str, bg: Color | None = None, fg: Color | None = None
-    ) -> str:
-        """
-        - Formats a string w colors in the terminal
-        - If colors aren't given, will use default terminal colors
-        """
-
-        res = ""
-
-        if bg:
-            res += bg.value
-
-        if fg:
-            res += fg.value
-
-        res += string
-        res += Color.RESET.value
-
-        return res
-
     def _parse_all_setting_values(self) -> bool:
+        """
+        - Attempts to parse all settings, even if some fail
+        - Returns true if all succeeded, false otherwise
+        """
         is_all_successful = True
 
-        # Attempt to parse all
         for setting in self._options:
             if not setting.parse_value():
                 is_all_successful = False
@@ -189,8 +219,10 @@ class MainMenu:
 
     def _is_disabled(self, opt: Setting) -> bool:
         """
-        Handles logic for determining if an option is disabled due to other options
+        Handles logic for determining if an option is disabled (ignored) due to other options
         """
+
+        # if opt.name == "random" and self._options:
 
         # random is disabled by seed
         # updates_per_s is disabled by step

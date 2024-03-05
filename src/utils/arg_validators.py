@@ -144,16 +144,14 @@ def pparse_neighbourhood_type(value) -> Neighbourhood:
     """Throws if neighbourhood type is not valid"""
 
     try:
-        moore, von = "moore", "von neumann"
-
         # Use a set to leverage # table complexity (O(1))
-        if value.lower() not in {moore, von}:
+        if not isinstance(value, str):
             raise ArgumentTypeError(f"Neighbourhood invalid")
 
-        match value:
+        match value.lower():
             case "moore":
                 return Neighbourhood.MOORE
-            case "von neumann":
+            case "vonneumann":
                 return Neighbourhood.VON_NEUMANN
             case _:
                 raise ArgumentTypeError("Neighbourhood not supported yet")
