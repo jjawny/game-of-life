@@ -5,9 +5,11 @@ import curses
 from time import sleep
 
 
-class MainMenu:
+class MenuScreen:
     """
     The main menu, built with curses module (will overlay the terminal w curses screen)
+
+    Will only render the settings it's given (list of generic setting objects)
 
     NOTE:
         - This menu uses the 256 color range ∴ your terminal must be a 256-color terminal
@@ -23,6 +25,7 @@ class MainMenu:
         display_name="Look at me!",
         name="arg",
         value=True,
+        default_value=True,
         parse_value_callback=(lambda _: True),
     )
 
@@ -61,6 +64,7 @@ class MainMenu:
 
         # Init curses and colors
         curses.use_default_colors()  # !important
+        screen.scrollok(True)
 
         COLOR_GRAY = 244
         COLOR_DEFAULT = -1

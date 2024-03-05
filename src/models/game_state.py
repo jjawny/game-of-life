@@ -1,38 +1,11 @@
-import threading
 import numpy as np
 
-from src.utils.simulation_utils import cell_to_priority
-from src.enums.neighbourhood import Neighbourhood
 from src.models.cell_matrix import CellMatrix
 from src.enums.cell_state import CellState
-from src.constants import constants
 from copy import copy
 
-
-
-class _GameState:
-    _instance = None
-    _lock = threading.Lock()
-
-    # Settings
-    # Note: internal methods access settings dict with bracket notation, we assume the key/value pair is defined and with correct type
-    _settings = {
-        "radius":               constants.DEFAULT_RADIUS,
-        "random":               constants.DEFAULT_RANDOM,
-        "cols":                 constants.DEFAULT_DIMENSION_X,
-        "rows":                 constants.DEFAULT_DIMENSION_Y,
-        "is_wrap_mode":         constants.DEFAULT_IS_WRAP_MODE,
-        "is_ghost_mode":        constants.DEFAULT_IS_GHOST_MODE,
-        "updates_per_s":        constants.DEFAULT_UPDATES_PER_S,
-        "neighbourhood":        constants.DEFAULT_NEIGHBOURHOOD,
-        "survival_rule":        constants.DEFAULT_SURVIVAL_RULE,
-        "resurrection_rule":    constants.DEFAULT_RESURRECTION_RULE,
-        "num_of_generations":   constants.DEFAULT_NUM_OF_GENERATIONS,
-    }
-    
-
-    # Generations (cell states)
-    _curr_gen: CellMatrix = CellMatrix()
+class GameState:
+    # Generations
     _prev_gens: list[CellMatrix] = []  # newest -> oldest
     _priority_order = [
         CellState.DEAD.value,
@@ -49,29 +22,9 @@ class _GameState:
         CellState.RARE,
     ]
 
-    def __new__(cls):
-        with cls._lock:
-            if not cls._instance:
-                cls._instance = super().__new__(cls)
-        return cls._instance
+    def __init__(self, initial_gen: CellMatrix = CellMatrix()):
+        self._curr_gen = initial_gen
 
-    # Setting-related methods
-    @property
-    def values(self):
-        """Returns a read-only copy of the settings"""
-        return self._settings.copy()
-
-    def get_value(self, key):
-        """Returns the value for a key (None if not found)"""
-        return self._settings.get(key, None)
-
-    def set_value(self, key, new_value):
-        """Sets the value for a key (throws if not found)"""
-        if key in self._settings:
-            self._settings[key] = new_value
-        else:
-            raise KeyError(f"Key '{key}' not found in MyClass")
-    
     # Generation-related methods
     @property
     def curr_gen(self):
@@ -165,15 +118,3 @@ class _GameState:
             priority = self._priority_order.index(value)
 
         return priority
-
-# Python modules are singletons by nature ∴ we can import the following.
-# Singletons are often argued to be an anti-pattern and globals suck but
-#   due to the simplicity of this class and what it represents, we allow
-#   thread safe access to read/write settings, instead of passing a settings
-#   object all over the place (unneccessary)
-
-# For improvements, take a look at:
-#   - Llama-Index's "service_context"
-#   - How a logger is setup
-
-game_state = _GameState()
