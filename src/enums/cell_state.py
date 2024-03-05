@@ -4,7 +4,8 @@ import random
 
 class CellState(Enum):
     """
-    Cell state represented by ASCII chars:
+    SUMMARY:
+        - Cell state represented by ASCII chars
         - These chars (on most OS) are proportioned 1x2
         - To represent a true square, each state is 2x a char
     """
