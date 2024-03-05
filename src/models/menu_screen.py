@@ -16,7 +16,10 @@ class MenuScreen:
     """
 
     _SPACEBARS_TO_EXIT = 2
+    _TABS_TO_RESET = 2
     _num_of_consecutive_spacebars = 0
+    _num_of_consecutive_tabs = 0
+
     _temporary_input: str = ""
 
     _cursor_idx = 0
@@ -88,7 +91,7 @@ class MenuScreen:
         while not self._is_final_callback_ready():
             screen.clear()
             self._render_banner(screen)
-            self._render_options_section(screen)
+            self._render_settings_section(screen)
             self._render_footer(screen)
             screen.refresh()
 
@@ -97,12 +100,12 @@ class MenuScreen:
     def _render_banner(self, screen: curses.window):
         screen.addstr("\n\n" + get_banner(offset=23) + "\n\n")
 
-    def _render_options_section(self, screen: curses.window):
+    def _render_settings_section(self, screen: curses.window):
         """
-        - Highlights the selected option
-        - Displays disabled options
-        - Displays invalid options
-        - Displays edited options
+        - Highlights the selected settings
+        - Displays disabled settings
+        - Displays invalid settings
+        - Displays edited settings
         """
         screen.addstr(
             "╭┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈·┈┈┈┈┈·┈ ┈┈ ┈ · ··\n", self._DISABLED_COLOR
@@ -111,7 +114,7 @@ class MenuScreen:
         opt_value_l_padding = 40
 
         for idx, opt in enumerate(self._settings):
-            opt_to_display = f"{opt.display_name}: {str(opt.value).rjust(opt_value_l_padding - len(opt.display_name))}"
+            display_setting = f"{opt.display_name}: {str(opt.value).rjust(opt_value_l_padding - len(opt.display_name))}"
             is_selected_setting = idx == self._cursor_idx
             style = curses.A_NORMAL
 
@@ -121,14 +124,14 @@ class MenuScreen:
             if is_selected_setting and self._temporary_input:
                 style |= self._EDIT_COLOR
                 new_display_name = f"* {opt.display_name}"
-                opt_to_display = f"{new_display_name}: {self._temporary_input.rjust(opt_value_l_padding - len(new_display_name))}"
+                display_setting = f"{new_display_name}: {self._temporary_input.rjust(opt_value_l_padding - len(new_display_name))}"
             elif self._is_disabled(opt):
                 style |= self._DISABLED_COLOR
             elif not opt.is_value_valid():
                 style |= self._ERROR_COLOR
 
             screen.addstr("┊ ", self._DISABLED_COLOR)  # side border
-            screen.addstr(f"{opt_to_display}\n", style)
+            screen.addstr(f"{display_setting}\n", style)
 
         screen.addstr(
             "╰┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈·┈┈┈┈ ┈┈ · ┈ · ·\n", self._DISABLED_COLOR
@@ -136,25 +139,50 @@ class MenuScreen:
 
     def _render_footer(self, screen: curses.window):
         """Renders the footer"""
-
-        selected_opt_helper_text = self._settings[self._cursor_idx].helper_text
-        warning_msg = "Please fix errors to start"
-        start_msg = "Space + Space to start"
-        exit_msg = "Ctrl + C to exit"
-        editing_msg = "Finish editing to start"
         center_len = 44
 
+        # Setting's helper message
+        selected_opt_helper_text = self._settings[self._cursor_idx].helper_text
         screen.addstr(f"{selected_opt_helper_text}".center(center_len))
         screen.addstr("\n")
+
+        # Fixed setting options helper message
+        options_msg = "LEFT/RIGHT to see options"
+
+        if self.selected_setting.possible_values:
+            screen.addstr(options_msg.center(center_len), self._DISABLED_COLOR)
+            screen.addstr("\n")
+        else:
+            screen.addstr("\n")
+
+        # Start helper message
+        editing_msg = "Finish editing to start"
+        warning_msg = "Please fix errors to start"
+        start_msg = "SPACE + SPACE to start"
 
         if self._temporary_input:
             screen.addstr(editing_msg.center(center_len), self._EDIT_COLOR)
         elif any(not opt.is_value_valid() for opt in self._settings):
             screen.addstr(warning_msg.center(center_len), self._ERROR_COLOR)
         else:
-            screen.addstr(start_msg.center(center_len), self._DISABLED_COLOR)
+            if self._num_of_consecutive_spacebars == 1:
+                screen.addstr(start_msg.center(center_len))
+            else:
+                screen.addstr(start_msg.center(center_len), self._DISABLED_COLOR)
 
         screen.addstr("\n")
+
+        # Reset helper message
+        reset_msg = "TAB + TAB to reset"
+        if self._num_of_consecutive_tabs == 1:
+            screen.addstr(reset_msg.center(center_len))
+        else:
+            screen.addstr(reset_msg.center(center_len), self._DISABLED_COLOR)
+        screen.addstr("\n")
+
+        # Exit helper message
+        exit_msg = "Ctrl + C to exit"
+
         screen.addstr(exit_msg.center(center_len), self._DISABLED_COLOR)
         screen.addstr("\n")
 
@@ -162,51 +190,62 @@ class MenuScreen:
         """
         Handler for all key presses
             - ⬅️ ➡️: If the selected setting has fixed options, cycles through
-            - ⬆️ ⬇️: Navigate through settings (temporary input is cleared)
-            - DELETE: Temporary input is cleared
+            - ⬆️ ⬇️: Navigates through settings (temporary input is cleared)
+            - DELETE: Clears the temporary input
             - ENTER: Applies the temporary input to the selected setting
-            - SPACE+SPACE: to exit the menu loop
+            - SPACE+SPACE: Exits the menu loop
+            - R+R: Resets all settings to default option
             - APHANUM: For temporary input
         """
-        selected_option = self.selected_setting
-        num_of_options = len(self._settings)
-        num_of_fixed_options = len(selected_option.possible_values)
-        is_fixed_options = True if selected_option.possible_values else False
+        selected_setting = self.selected_setting
+        num_of_settings = len(self._settings)
+        num_of_fixed_options = len(selected_setting.possible_values)
+        is_fixed_options = True if selected_setting.possible_values else False
         is_alphanumeric = lambda key: isinstance(key, str) and key.isalnum()
 
-        # SPACE: Handle separately
-        if key == 32:
+        # SPACES: Always handle
+        if key == ord(" "):
             self._num_of_consecutive_spacebars += 1
         else:
             self._num_of_consecutive_spacebars = 0
+
+        # TABS: Always handle
+        if key == ord("\t"):
+            self._num_of_consecutive_tabs += 1
+        else:
+            self._num_of_consecutive_tabs = 0
+
+        if self._num_of_consecutive_tabs >= self._TABS_TO_RESET:
+            [s.reset_to_default() for s in self._settings]
+            self._num_of_consecutive_tabs = 0
 
         match key:
             # ARROW KEYS
             case curses.KEY_UP:
                 self._clear_temporary_input()
-                self._cursor_idx = (self._cursor_idx - 1) % num_of_options
+                self._cursor_idx = (self._cursor_idx - 1) % num_of_settings
             case curses.KEY_DOWN:
                 self._clear_temporary_input()
-                self._cursor_idx = (self._cursor_idx + 1) % num_of_options
+                self._cursor_idx = (self._cursor_idx + 1) % num_of_settings
             case curses.KEY_LEFT:
                 if is_fixed_options:
                     next_idx = (self._possible_value_indx - 1) % num_of_fixed_options
                     self._possible_value_indx = next_idx
-                    self._temporary_input = selected_option.possible_values[next_idx]
+                    self._temporary_input = selected_setting.possible_values[next_idx]
             case curses.KEY_RIGHT:
                 if is_fixed_options:
                     next_idx = (self._possible_value_indx + 1) % num_of_fixed_options
                     self._possible_value_indx = next_idx
-                    self._temporary_input = selected_option.possible_values[next_idx]
+                    self._temporary_input = selected_setting.possible_values[next_idx]
             # DELETE KEYS
             case 127 | curses.KEY_DC | curses.KEY_BACKSPACE:
                 if not is_fixed_options:
                     self._clear_temporary_input()
-                    selected_option.value = ""
+                    selected_setting.value = ""
             # ENTER KEYS
             case 10 | 13 | curses.KEY_ENTER:
                 if self._temporary_input:
-                    selected_option.value = self._temporary_input
+                    selected_setting.value = self._temporary_input
                     self._clear_temporary_input()
             # ALPHANUM INPUT
             case _:
@@ -231,9 +270,9 @@ class MenuScreen:
 
         return is_all_successful
 
-    def _is_disabled(self, opt: Setting) -> bool:
+    def _is_disabled(self, setting: Setting) -> bool:
         """
-        Handles logic for determining if an option is disabled (ignored) due to other options
+        Handles logic for determining if a setting is disabled (ignored) due to other settings
         """
 
         # if opt.name == "random" and self._options:
