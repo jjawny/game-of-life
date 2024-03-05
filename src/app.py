@@ -89,8 +89,10 @@ def simulate(settings: list[Setting]):
 def main() -> None:
     """Extracted main method to be optionally triggered by another script"""
     try:
-        menu = MenuScreen(final_callback=simulate, options=get_settings(get_cli_args()))
-        menu.render()
+        initial_settings = get_settings(get_cli_args())
+        menu = MenuScreen(settings=initial_settings)
+        settings = menu.show()
+        simulate(settings=settings)
     except KeyboardInterrupt:
         print("Exiting...")
     finally:
