@@ -1,13 +1,11 @@
-import numpy as np
-import curses
-import math
-
 from src.utils.string_utils import get_banner
 from src.models.cell_matrix import CellMatrix
 from src.enums.cell_state import CellState
 from time import sleep
 from copy import copy
-
+import numpy as np
+import curses
+import math
 
 class SimulationScreen:
     # Generations

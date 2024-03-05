@@ -1,8 +1,7 @@
-import random
-
 from src.enums.neighbourhood import Neighbourhood
 from src.enums.cell_state import CellState
 from src.constants import constants
+import random
 
 
 class CellMatrix:

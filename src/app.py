@@ -40,15 +40,9 @@ def main() -> None:
         menu = MenuScreen(settings=initial_settings)
         settings = menu.show()
 
-        is_ghost_mode = next(
-            (s.value for s in settings if s.name == "is_ghost_mode"), True
-        )
-        num_of_generations = next(
-            (s.value for s in settings if s.name == "num_of_generations"), 100
-        )
-        updates_per_s = next(
-            (s.value for s in settings if s.name == "updates_per_s"), 10
-        )
+        is_ghost_mode = next((s.value for s in settings if s.name == "is_ghost_mode"), True)
+        num_of_generations = next((s.value for s in settings if s.name == "num_of_generations"), 100)
+        updates_per_s = next((s.value for s in settings if s.name == "updates_per_s"), 10)
 
         initial_gen = setup_matrix(settings=settings)
         simulation = SimulationScreen(
