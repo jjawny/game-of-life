@@ -86,16 +86,15 @@ def get_settings(args: dict[str, object]) -> list[Setting]:
             value=user_friendly_survival_rule,
             default_value=user_friendly_default_survival_rule,
             parse_value_callback=parse_rule,
-            helper_text="Number of alive neighbour cells for (alive) host cell to survive",
+            helper_text="Number of alive neighbour cells for (alive) host cell to survive (comma separated)",
         ),
-        # NOTE: Use set as string for user-friendly display, will be converted back to set when parsed
         Setting(
             display_name="Resurrection rule",
             name="resurrection_rule",
             value=user_friendly_resurrection_rule,
             default_value=user_friendly_default_resurrection_rule,
             parse_value_callback=parse_rule,
-            helper_text="Number of alive neighbour cells for (dead) host cell to resurrect",
+            helper_text="Number of alive neighbour cells for (dead) host cell to resurrect (comma separated)",
         ),
         Setting(
             display_name="Neighbourhood",
