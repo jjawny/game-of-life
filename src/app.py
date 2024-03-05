@@ -95,5 +95,7 @@ def main() -> None:
         simulate(settings=settings)
     except KeyboardInterrupt:
         print("Exiting...")
+    except Exception as ex:
+        print("An unexpected error has occurred...", ex)
     finally:
         print("")
