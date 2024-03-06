@@ -8,8 +8,9 @@ import curses
 import math
 
 class SimulationScreen:
-    # Generations
+    _gen_string_history: list[str] = []
     _prev_gens: list[CellMatrix] = []  # newest -> oldest
+    _ghost_state_list = [CellState.WELL_DONE, CellState.MEDIUM, CellState.RARE] # applied newest -> oldest
     _priority_order = [
         CellState.DEAD.value,
         CellState.RARE.value,
@@ -17,15 +18,6 @@ class SimulationScreen:
         CellState.WELL_DONE.value,
         CellState.ALIVE.value,
     ]
-
-    # State that belongs to a previous generation at the corresponding index (newest -> oldest)
-    _ghost_state_list = [
-        CellState.WELL_DONE,
-        CellState.MEDIUM,
-        CellState.RARE,
-    ]
-
-    _final_gen = ""
 
     def __init__(self, num_of_generations: int = 100, is_ghost_mode: bool = True, updates_per_s: int = 10, initial_gen: CellMatrix = CellMatrix()):
         self._num_of_generations = num_of_generations
