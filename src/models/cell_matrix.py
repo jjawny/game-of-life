@@ -1,6 +1,5 @@
 from src.enums.neighbourhood import Neighbourhood
 from src.enums.cell_state import CellState
-from src.constants import constants
 import random
 
 
@@ -31,16 +30,16 @@ class CellMatrix:
     def __init__(
         self,
         seed: list[tuple[int, int]] = [],
-        radius: int = constants.DEFAULT_RADIUS,
-        random: int = constants.DEFAULT_RANDOM,
-        cols: int = constants.DEFAULT_DIMENSION_X,
-        rows: int = constants.DEFAULT_DIMENSION_Y,
-        is_wrap: bool = constants.DEFAULT_IS_WRAP_MODE,
-        survival_rule: set = constants.DEFAULT_SURVIVAL_RULE,
-        resurrection_rule: set = constants.DEFAULT_RESURRECTION_RULE,
-        neighbourhood: Neighbourhood = constants.DEFAULT_NEIGHBOURHOOD,
+        radius: int = 1,
+        random: int = 50,
+        cols: int = 11,
+        rows: int = 11,
+        is_wrap: bool = True,
+        survival_rule: set = {2, 3},
+        resurrection_rule: set = {3},
+        neighbourhood: Neighbourhood = Neighbourhood.MOORE,
     ):
-        # TODO: use existing custom validation functions here as well ?
+        # TODO: handle seed
         self._random = random
         self._is_wrap = is_wrap
         self._survive_rule = survival_rule
