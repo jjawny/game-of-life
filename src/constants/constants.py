@@ -8,7 +8,7 @@ MIN_UPDATES_PER_S: int = 1
 MAX_UPDATES_PER_S: int = 1_000
 
 MIN_DIMENSION: int = 1
-MAX_DIMENSION: int = 256
+MAX_DIMENSION: int = 30
 
 MIN_RULE: int = 1
 MAX_RULE: int = 100

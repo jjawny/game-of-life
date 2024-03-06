@@ -3,6 +3,7 @@ from src.utils.settings_utils import get_settings
 from src.models.cell_matrix import CellMatrix
 from src.models.menu_screen import MenuScreen
 from src.utils.args_utils import get_cli_args
+from src.utils.gif_utils import export_as_gif
 from src.models.setting import Setting
 
 
@@ -52,10 +53,11 @@ def main() -> None:
         )
 
         all_gens = simulation.show()
+        export_as_gif(all_gens, updates_per_s)
 
         if all_gens:
             print(f"\n{all_gens[-1]}")
-            
+
     except KeyboardInterrupt:
         print("\nExiting...")
     except Exception as ex:
