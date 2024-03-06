@@ -39,7 +39,7 @@ class SimulationScreen:
             - Returns the final generation as a string
         """
         curses.wrapper(self._render_screen)
-        return self._final_gen
+        return self._gen_string_history
     
     def _render_screen(self, screen: curses.window):
         """
@@ -63,14 +63,15 @@ class SimulationScreen:
         self._render_footer(screen, 1, line_width)
 
         for idx, gen in enumerate(generations):
+            self._gen_string_history.append(gen)
+
             sleep(delay_s)
+
             screen.clear()
             self._render_banner(screen, offset)
             screen.addstr(gen)
-            screen.addstr("\n")
             self._render_footer(screen, idx + 1, line_width)
             screen.refresh()
-            self._final_gen = gen
 
         screen.addstr("Press any key to exit".center(line_width))
         screen.addstr("\n")
@@ -107,6 +108,7 @@ class SimulationScreen:
 
     def _render_footer(self, screen: curses.window, idx: int, line_width: int = 0):
         """Renders the footer"""
+        screen.addstr("\n")
         screen.addstr(f"Generation #{idx}".center(line_width))
         screen.addstr("\n")
     
