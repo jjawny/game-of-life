@@ -15,7 +15,7 @@ class Setting:
         value,
         default_value,
         parse_value_callback: Callable,
-        possible_values: list = [],
+        possible_values: list | None = None,
         helper_text: str = "",
     ):
         self._display_name = display_name
@@ -23,7 +23,7 @@ class Setting:
         self._value = value
         self._default_value = default_value
         self._parse_value_callback = parse_value_callback
-        self._possible_values = possible_values
+        self._possible_values = possible_values if possible_values else []
         self._helper_text = helper_text
 
     @property

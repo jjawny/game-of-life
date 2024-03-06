@@ -29,7 +29,7 @@ class CellMatrix:
 
     def __init__(
         self,
-        seed: list[tuple[int, int]] = [],
+        seed: list[tuple[int, int]] | None = None,
         radius: int = 1,
         random: int = 50,
         cols: int = 11,

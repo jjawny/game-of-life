@@ -27,7 +27,7 @@ class MenuScreen:
 
     def __init__(
         self,
-        settings: list[Setting] = [],
+        settings: list[Setting] | None = None,
     ):
         if settings:
             self._settings = settings
