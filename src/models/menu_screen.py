@@ -16,15 +16,14 @@ class MenuScreen:
         - Check TERM environment variable, example: 'xterm-256color'
     """
 
-    _SPACEBARS_TO_EXIT = 2
-    _TABS_TO_RESET = 2
-    _num_of_consecutive_spacebars = 0
-    _num_of_consecutive_tabs = 0
-
+    _SPACEBARS_TO_EXIT: int = 2
+    _TABS_TO_RESET: int = 2
+    _spacebar_count: int = 0
+    _tab_count: int = 0
+    _cursor_idx: int = 0
+    _possible_value_indx: int = 0
+    _max_temporary_input_len: int = 20
     _temporary_input: str = ""
-
-    _cursor_idx = 0
-    _possible_value_indx = 0
 
     def __init__(
         self,
@@ -65,8 +64,8 @@ class MenuScreen:
 
     def _is_final_callback_ready(self):
         """Confirms the settings are ready to inject into final callback"""
-        is_confirmed = self._num_of_consecutive_spacebars >= self._SPACEBARS_TO_EXIT
-        is_not_editing = self._temporary_input == ""
+        is_confirmed = self._spacebar_count >= self._SPACEBARS_TO_EXIT
+        is_not_editing = self._temporary_input.strip() == ""
         is_all_values_valid = all(opt.is_value_valid() for opt in self._settings)
 
         return is_confirmed and is_all_values_valid and is_not_editing
@@ -122,7 +121,7 @@ class MenuScreen:
             if is_selected_setting:
                 style |= curses.A_REVERSE
 
-            if is_selected_setting and self._temporary_input:
+            if is_selected_setting and self._temporary_input.strip():
                 style |= self._EDIT_COLOR
                 new_display_name = f"* {opt.display_name}"
                 display_setting = f"{new_display_name}: {self._temporary_input.rjust(opt_value_l_padding - len(new_display_name))}"
@@ -161,12 +160,12 @@ class MenuScreen:
         warning_msg = "Please fix errors to start"
         start_msg = "SPACE + SPACE to start"
 
-        if self._temporary_input:
+        if self._temporary_input.strip():
             screen.addstr(editing_msg.center(center_len), self._EDIT_COLOR)
         elif any(not opt.is_value_valid() for opt in self._settings):
             screen.addstr(warning_msg.center(center_len), self._ERROR_COLOR)
         else:
-            if self._num_of_consecutive_spacebars == 1:
+            if self._spacebar_count == 1:
                 screen.addstr(start_msg.center(center_len))
             else:
                 screen.addstr(start_msg.center(center_len), self._DISABLED_COLOR)
@@ -175,7 +174,7 @@ class MenuScreen:
 
         # Reset helper message
         reset_msg = "TAB + TAB to reset"
-        if self._num_of_consecutive_tabs == 1:
+        if self._tab_count == 1:
             screen.addstr(reset_msg.center(center_len))
         else:
             screen.addstr(reset_msg.center(center_len), self._DISABLED_COLOR)
@@ -209,19 +208,19 @@ class MenuScreen:
 
         # SPACES: Always handle
         if key == ord(" "):
-            self._num_of_consecutive_spacebars += 1
+            self._spacebar_count += 1
         else:
-            self._num_of_consecutive_spacebars = 0
+            self._spacebar_count = 0
 
         # TABS: Always handle
         if key == ord("\t"):
-            self._num_of_consecutive_tabs += 1
+            self._tab_count += 1
         else:
-            self._num_of_consecutive_tabs = 0
+            self._tab_count = 0
 
-        if self._num_of_consecutive_tabs >= self._TABS_TO_RESET:
+        if self._tab_count >= self._TABS_TO_RESET:
             [s.reset_to_default() for s in self._settings]
-            self._num_of_consecutive_tabs = 0
+            self._tab_count = 0
 
         match key:
             # ARROW KEYS
@@ -254,8 +253,9 @@ class MenuScreen:
             # ALPHANUM INPUT
             case _:
                 if not is_fixed_options and is_valid_input(chr(key)):
-                    self._temporary_input += chr(key)
-                    self._temporary_input.strip()
+                    if len(self._temporary_input) < self._max_temporary_input_len:
+                        self._temporary_input += chr(key)
+                        self._temporary_input.strip()
 
     def _clear_temporary_input(self):
         """Explicitly the temporary input"""
