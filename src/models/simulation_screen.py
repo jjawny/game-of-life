@@ -1,11 +1,13 @@
 from src.utils.string_utils import get_banner
 from src.models.cell_matrix import CellMatrix
 from src.enums.cell_state import CellState
+from src.utils.gif_utils import export_as_gif
 from time import sleep
 from copy import copy
 import numpy as np
 import curses
 import math
+
 
 class SimulationScreen:
     _gen_string_history: list[str] = []
@@ -36,7 +38,7 @@ class SimulationScreen:
             - Blocks thread til exit
             - Starts simulation
             - Exists when simulation ends
-            - Returns the final generation as a string
+            - Returns all generations as strings
         """
         curses.wrapper(self._render_screen)
         return self._gen_string_history
@@ -73,9 +75,13 @@ class SimulationScreen:
             self._render_footer(screen, idx + 1, line_width)
             screen.refresh()
 
-        screen.addstr("Press any key to exit".center(line_width))
+        screen.addstr("Press any key to export as GIF!".center(line_width))
         screen.addstr("\n")
-        screen.getkey() # block until key press
+        screen.getkey()
+        screen.addstr("Exporting GIF, please wait...".center(line_width))
+        screen.addstr("\n")
+        screen.refresh()
+        export_as_gif(self._gen_string_history)
 
     def assign_new_cell_matrix(self, matrix: CellMatrix):
         """
