@@ -3,15 +3,11 @@ from src.enums.seed import Seed
 
 
 def get_seed(name: Seed) -> list[tuple[int, int]]:
-    """Returns list of (x,y) coords to plant the seed"""
-    res = []
-
+    """Returns a list of (x,y) coords to plant the seed"""
     match name:
         case Seed.NONE:
-            res = NONE
+            return NONE
         case Seed.GLIDER:
-            res = GLIDER
+            return GLIDER
         case _:
-            pass
-
-    return res
+            return []

@@ -1,5 +1,5 @@
 def get_banner(line_width: int = 0):
-    """Gets the full banner as a single string"""
+    """Gets the banner as a single string, optionally centered"""
 
     lines = [
         r" .---.  .----. .-.   ",

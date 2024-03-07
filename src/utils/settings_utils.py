@@ -7,19 +7,9 @@ from src.enums.seed import Seed
 def get_settings(args: dict[str, object]) -> list[Setting]:
     """Creates a fixed list of setting objects based on dictionary of args"""
 
-    # User-friendly values will be converted back to proper value when parsed
-    user_friendly_default_neighbourhood = constants.DEFAULT_NEIGHBOURHOOD.value
-    user_friendly_neighbourhood = args.get("neighbourhood", constants.DEFAULT_NEIGHBOURHOOD.value)
+    # User-friendly values will be converted back to usable value when parsed
     user_friendly_default_survival_rule = ",".join(map(str, constants.DEFAULT_SURVIVAL_RULE))
-    user_friendly_survival_rule = args.get("survival_rule", constants.DEFAULT_SURVIVAL_RULE)
     user_friendly_default_resurrection_rule = ",".join(map(str, constants.DEFAULT_RESURRECTION_RULE))
-    user_friendly_resurrection_rule = args.get("resurrection_rule", constants.DEFAULT_RESURRECTION_RULE)
-
-    if isinstance(user_friendly_survival_rule, set):
-        user_friendly_survival_rule = ",".join(map(str, user_friendly_survival_rule))
-
-    if isinstance(user_friendly_resurrection_rule, set):
-        user_friendly_resurrection_rule = ",".join(map(str, user_friendly_resurrection_rule))
 
     # Create the settings w fallback default values
     res: list[Setting] = [
@@ -84,7 +74,7 @@ def get_settings(args: dict[str, object]) -> list[Setting]:
         Setting(
             display_name="Survival rule",
             name="survival_rule",
-            value=user_friendly_survival_rule,
+            value=args.get("survival_rule", user_friendly_default_survival_rule),
             default_value=user_friendly_default_survival_rule,
             parse_value_callback=parse_rule,
             helper_text="Number of alive neighbour cells for (alive) host cell to survive (comma separated)",
@@ -92,7 +82,7 @@ def get_settings(args: dict[str, object]) -> list[Setting]:
         Setting(
             display_name="Resurrection rule",
             name="resurrection_rule",
-            value=user_friendly_resurrection_rule,
+            value=args.get("resurrection_rule", user_friendly_default_resurrection_rule),
             default_value=user_friendly_default_resurrection_rule,
             parse_value_callback=parse_rule,
             helper_text="Number of alive neighbour cells for (dead) host cell to resurrect (comma separated)",
@@ -100,8 +90,8 @@ def get_settings(args: dict[str, object]) -> list[Setting]:
         Setting(
             display_name="Neighbourhood",
             name="neighbourhood",
-            value=user_friendly_neighbourhood,
-            default_value=user_friendly_default_neighbourhood,
+            value=args.get("neighbourhood", constants.DEFAULT_NEIGHBOURHOOD.value),
+            default_value=constants.DEFAULT_NEIGHBOURHOOD.value,
             possible_values=["Moore", "VonNeumann"],
             parse_value_callback=parse_neighbourhood,
             helper_text=f"Neighbourhood type '{Neighbourhood.MOORE.value}' or '{Neighbourhood.VON_NEUMANN.value}'",
@@ -192,9 +182,10 @@ def parse_rule(value) -> set | None:
         res = set()
 
         for s in strings:
-            if not s.isdigit():
+            if s.isdigit() and constants.MIN_RULE <= int(s) <= constants.MAX_RULE:
+                res.add(int(s))
+            else:
                 return None
-            res.add(int(s))
 
         return res
     except:

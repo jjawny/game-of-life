@@ -23,15 +23,23 @@ def get_cli_args() -> dict:
         "neighbourhood": args.neighbourhood,
         "radius": args.radius,
     }
+
     return res
 
 
 def _add_game_of_life_args(parser: ArgumentParser):
     """
-    Purpose: to bulk-add all arguments in the context of the Game of Life application
-    """
+    Bulk adds all arguments in the context of the 'Game of Life' application.
 
-    # FYI: order when adding arguments = order they show up in help doc
+    Arg types and default values are not strict (strings and numbers only)
+
+    As when converted to Settings obj, they can be parsed to their usable values ('moore' -> Neighbourhood.MOORE).
+
+    This serves 2 purposes:
+
+        1. Allow user to reach menu screen to see/fix invalid args (out of bounds, etc) a better UX
+        2. Allow the args to appear in a user friendly format (instead of fully qualified enum names, etc)
+    """
 
     parser.add_argument(
         "-d",
@@ -90,7 +98,7 @@ def _add_game_of_life_args(parser: ArgumentParser):
     parser.add_argument(
         "--survival-rule",
         type=str,
-        default=constants.DEFAULT_SURVIVAL_RULE,
+        default=",".join(map(str, constants.DEFAULT_SURVIVAL_RULE)),
         metavar="comma separated numbers",
         help="Number of alive neighbour cells for (alive) host cell to survive",
     )
@@ -98,7 +106,7 @@ def _add_game_of_life_args(parser: ArgumentParser):
     parser.add_argument(
         "--resurrection-rule",
         type=str,
-        default=constants.DEFAULT_RESURRECTION_RULE,
+        default=",".join(map(str, constants.DEFAULT_RESURRECTION_RULE)),
         metavar="comma separated numbers",
         help="Number of alive neighbour cells for (dead) host cell to resurrect",
     )
@@ -109,7 +117,7 @@ def _add_game_of_life_args(parser: ArgumentParser):
         type=str,
         default=constants.DEFAULT_NEIGHBOURHOOD.value,
         metavar="type",
-        help="Type of neighbourhood: 'm' for Moore, 'v' for VonNeumann",
+        help="Type of neighbourhood: 'Moore' or 'VonNeumann'",
     )
 
     parser.add_argument(

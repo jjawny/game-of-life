@@ -7,33 +7,26 @@ import os
 
 FONT_POINTS = 10
 
-# NOTE: Known issues with Pillow GIF durations...
-# For now, use a constant, see:
-#   - https://github.com/python-pillow/Pillow/issues/3073
-#   - https://stackoverflow.com/a/64530622
-FRAME_DURATION = 33
 
 def export_as_gif(strings: list[str], updates_per_s: int = 1) -> bool:
-    """
-    Assumes all frames are the same size
-
-    Returns True if successful, False otherwise
-    """
+    """Returns True if successful, False otherwise"""
 
     if not strings:
         return False
 
-    dir_name = "gifs"
+    # File name
+    DIR_NAME = "gifs"
+    _ensure_gif_dir_exists(DIR_NAME)
+    now = datetime.now().strftime("%Y%m%d%H%M%S")
+    file_name = f"GAMEofLIFE-{now}.gif"
+
+    # Generate frames
     img_bytes_list = []
     x, y = _get_inches_xy(strings[0])
 
     for s in strings:
         img_bytes_list.append(_convert_to_frame_bytes(s, x, y))
 
-    _ensure_gif_dir_exists(dir_name)
-
-    now = datetime.now().strftime("%Y%m%d%H%M%S")
-    file_name = f"GAMEofLIFE-{now}.gif"
     frames = [Image.open(img) for img in img_bytes_list]
     final_frames = frames[1:]
 
@@ -41,8 +34,14 @@ def export_as_gif(strings: list[str], updates_per_s: int = 1) -> bool:
     if len(frames) > 1:
         final_frames = frames[1:] + frames[-2::-1]
 
+    # NOTE: Known issues with Pillow ignoring duration param for GIF...
+    # For now use a constant
+    # See:
+    #   - https://github.com/python-pillow/Pillow/issues/3073
+    #   - https://stackoverflow.com/a/64530622
+    FRAME_DURATION = 33
     frames[0].save(
-        f"{dir_name}/{file_name}",
+        f"{DIR_NAME}/{file_name}",
         save_all=True,
         append_images=final_frames,
         duration=FRAME_DURATION,
@@ -85,7 +84,7 @@ def _convert_to_frame_bytes(string: str, width: float, height: float):
         img_bytes,
         dpi=100,
         format="png",
-        # NOTE: Issue when removing padding, images are slightly different sizes which causes pillow to throw when merging into GIF
+        # NOTE: Issue when removing padding, images are slightly different sizes which causes Pillow to throw when merging into GIF
         # pad_inches=0,
         # bbox_inches="tight",
     )
