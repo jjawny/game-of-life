@@ -1,77 +1,94 @@
-from src.constants import constants
 import matplotlib.pyplot as plot
 from datetime import datetime
 from io import BytesIO
 from PIL import Image
+import math
 import os
 
-DIRECTORY_NAME = "gifs"
+FONT_POINTS = 10
 
+# NOTE: Known issues with Pillow GIF durations...
+# For now, use a constant, see:
+#   - https://github.com/python-pillow/Pillow/issues/3073
+#   - https://stackoverflow.com/a/64530622
+FRAME_DURATION = 33
 
-def export_as_gif(strings: list[str], updates_per_s: int = 1):
+def export_as_gif(strings: list[str], updates_per_s: int = 1) -> bool:
     """
     Assumes all frames are the same size
-    """
-    _ensure_gif_dir_exists()
 
+    Returns True if successful, False otherwise
+    """
+
+    if not strings:
+        return False
+
+    dir_name = "gifs"
     img_bytes_list = []
-    now = datetime.now().strftime("%Y%m%d%H%M%S")
-    file_name = f"GAMEofLIFE-{now}.gif"
-    duration = (100 / updates_per_s) * len(strings)
+    x, y = _get_inches_xy(strings[0])
 
     for s in strings:
-        img_bytes_list.append(_convert_to_frame_bytes(s))
+        img_bytes_list.append(_convert_to_frame_bytes(s, x, y))
 
+    _ensure_gif_dir_exists(dir_name)
+
+    now = datetime.now().strftime("%Y%m%d%H%M%S")
+    file_name = f"GAMEofLIFE-{now}.gif"
     frames = [Image.open(img) for img in img_bytes_list]
+    final_frames = frames[1:]
+
+    # BOOMERANG EFFECT
+    if len(frames) > 1:
+        final_frames = frames[1:] + frames[-2::-1]
+
     frames[0].save(
-        f"{DIRECTORY_NAME}/{file_name}",
+        f"{dir_name}/{file_name}",
         save_all=True,
-        append_images=frames[1:],
-        duration=duration,
+        append_images=final_frames,
+        duration=FRAME_DURATION,
         loop=0,
     )
 
-
-def _ensure_gif_dir_exists():
-    if not os.path.exists(DIRECTORY_NAME):
-        os.makedirs(DIRECTORY_NAME)
+    return True
 
 
-def _convert_to_frame_bytes(string: str):
+def _ensure_gif_dir_exists(name: str):
+    """Ensures a directory exists in the directory the app is executed"""
+    if not os.path.exists(name):
+        os.makedirs(name)
+
+
+def _get_inches_xy(string: str) -> tuple[float, float]:
+    # COMPUTE SIZE DYNAMICALLY
+    # Great summary for Matplotlib's size ratios (dots vs inches): https://stackoverflow.com/a/47639545
+    lines = string.split("\n")
+    string_width = math.floor((len(lines[0]) / 2))  # divide by 2 as cells are 2 chars wide '██'
+    string_height = len(lines)
+
+    font_points_x = FONT_POINTS * string_width
+    font_points_y = FONT_POINTS * string_height
+
+    # Divding values were determined from testing exporting gifs...
+    inches_x = font_points_x / 46.4
+    inches_y = font_points_y / 45
+
+    return (inches_x, inches_y)
+
+
+def _convert_to_frame_bytes(string: str, width: float, height: float):
     img_bytes = BytesIO()
 
-    # 1. We will set fixed image dimensions with the max dimensions allowed
-    #    This guarentees generated cell matrices will fit inside
-    #
-    #    Matplotlib (x,y) axis points do not line up with monospace chars unfortunately...
-    #    Determine the "divider" values to fit a number of chars within image bounds
-    #    NOTE: This requires testing to calc new dividers when max constants change
-    CHAR_TO_IMG_WIDTH_DIVIDER = 4.5
-    CHAR_TO_IMG_HEIGHT_DIVIDER = 4.2
-
-    img_full_width = constants.MAX_DIMENSION / CHAR_TO_IMG_WIDTH_DIVIDER
-    img_full_height = constants.MAX_DIMENSION / CHAR_TO_IMG_HEIGHT_DIVIDER
-
-    # 2. We will get the width/height of the matrix
-    #    We will apply the divider to keep these within bounds
-    #    NOTE: To represent a true square, each cell consists of 2 chars, this means we need to divide width in half
-    lines = string.split("\n")
-    string_width = (len(lines[0]) / 2) / CHAR_TO_IMG_WIDTH_DIVIDER
-    string_height = len(lines) / CHAR_TO_IMG_HEIGHT_DIVIDER
-
-    # 3. We convert the width/height of the strings into their percentage of image's width/height
-    string_width_percentage = string_width / img_full_width
-    string_height_percentage = string_height / img_full_height
-
-    # 4. To center, we want to move the graph left/down by half of its width/height
-    offset_x = 0.5 - (string_width_percentage / 2)
-    offset_y = 0.5 - (string_height_percentage / 2)
-
-    # 5. Create the image
-    plot.figure(figsize=(img_full_width, img_full_height))
+    plot.figure(figsize=(width, height), facecolor="silver")
     plot.axis("off")  # toggle "on" (comment out) for debugging
-    plot.text(offset_x, offset_y, string, fontfamily="monospace")
-    plot.savefig(img_bytes, format="png", dpi=100)
+    plot.text(0, 0, string, fontfamily="monospace", fontsize=FONT_POINTS)
+    plot.savefig(
+        img_bytes,
+        dpi=100,
+        format="png",
+        # NOTE: Issue when removing padding, images are slightly different sizes which causes pillow to throw when merging into GIF
+        # pad_inches=0,
+        # bbox_inches="tight",
+    )
     plot.close()
 
     return img_bytes
