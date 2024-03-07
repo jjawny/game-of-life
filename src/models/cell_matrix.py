@@ -83,9 +83,9 @@ class CellMatrix:
         return res
 
     def change_state(
-            self,
-            new_state: CellState,
-            old_state: CellState | None = None
+        self,
+        new_state: CellState,
+        old_state: CellState | None = None
     ):
         """
         If no old state is specified, the new state will be applied to all cells that are NOT dead
@@ -102,9 +102,9 @@ class CellMatrix:
                     row[x] = new_state.value
 
     def apply_cells(
-            self,
-            cells: list[tuple[int, int]],
-            state: CellState = CellState.ALIVE
+        self,
+        cells: list[tuple[int, int]],
+        state: CellState = CellState.ALIVE
     ):
         """Adds given cells to the matrix if in bounds"""
 

@@ -9,6 +9,7 @@ from src.models.setting import Setting
 
 def setup_matrix(settings: list[Setting]) -> CellMatrix:
     """Setup the matrix w settings"""
+
     # Convert to dict for easy assignment
     settings_dict = {setting.name: setting.value for setting in settings}
     matrix = CellMatrix(
@@ -22,6 +23,7 @@ def setup_matrix(settings: list[Setting]) -> CellMatrix:
         neighbourhood=settings_dict["neighbourhood"],
         radius=settings_dict["radius"],
     )
+    
     return matrix
 
 
@@ -36,13 +38,7 @@ def main() -> None:
         num_of_generations = next((s.value for s in settings if s.name == "num_of_generations"), 100)
         updates_per_s = next((s.value for s in settings if s.name == "updates_per_s"), 10)
 
-        simulation = SimulationScreen(
-            initial_gen=initial_gen,
-            is_ghost_mode=is_ghost_mode,
-            num_of_generations=num_of_generations,
-            updates_per_s=updates_per_s,
-        )
-
+        simulation = SimulationScreen(initial_gen=initial_gen, is_ghost_mode=is_ghost_mode, num_of_generations=num_of_generations, updates_per_s=updates_per_s)
         all_gens = simulation.show()
 
         if all_gens:

@@ -20,7 +20,13 @@ class SimulationScreen:
         CellState.ALIVE.value,
     ]
 
-    def __init__(self, num_of_generations: int = 100, is_ghost_mode: bool = True, updates_per_s: int = 10, initial_gen: CellMatrix = CellMatrix()):
+    def __init__(
+        self,
+        num_of_generations: int = 100,
+        is_ghost_mode: bool = True,
+        updates_per_s: int = 10,
+        initial_gen: CellMatrix = CellMatrix()
+    ):
         self._num_of_generations = num_of_generations
         self._is_ghost_mode = is_ghost_mode
         self._updates_per_s = updates_per_s
