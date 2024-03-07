@@ -5,7 +5,8 @@ class Setting:
     """
     - Represents a single setting
     - Stores the current value
-    - Takes a callback to validate the value
+    - Takes a callback used to validate and parse the value
+    - Other helpful methods (reset to default value, etc)
     """
 
     def __init__(
@@ -31,12 +32,12 @@ class Setting:
         return self._display_name
 
     @property
-    def helper_text(self) -> str:
-        return self._helper_text
-
-    @property
     def name(self) -> str:
         return self._name
+
+    @property
+    def helper_text(self) -> str:
+        return self._helper_text
 
     @property
     def possible_values(self) -> list:

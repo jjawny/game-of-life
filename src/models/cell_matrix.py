@@ -5,8 +5,7 @@ import random
 
 class CellMatrix:
     """
-    Represents a single matrix of cells:
-        - TODO: write about the params, same about game-state
+    Represents a single matrix of cells
     """
 
     # Dev notes:
@@ -39,16 +38,13 @@ class CellMatrix:
         resurrection_rule: set = {3},
         neighbourhood: Neighbourhood = Neighbourhood.MOORE,
     ):
-        # TODO: handle seed
         self._random = random
         self._is_wrap = is_wrap
         self._survive_rule = survival_rule
         self._resurrect_rule = resurrection_rule
         self._neighbourhood = neighbourhood
         self._radius = radius
-        self._matrix: list[list[str]] = [
-            [(CellState.DEAD.value) for _ in range(cols)] for _ in range(rows)
-        ]
+        self._matrix: list[list[str]] = [[(CellState.DEAD.value) for _ in range(cols)] for _ in range(rows)]
         self.apply_cells(seed) if seed else self.apply_random_cells()
 
     @property
@@ -86,7 +82,11 @@ class CellMatrix:
 
         return res
 
-    def change_state(self, new_state: CellState, old_state: CellState | None = None):
+    def change_state(
+            self,
+            new_state: CellState,
+            old_state: CellState | None = None
+    ):
         """
         If no old state is specified, the new state will be applied to all cells that are NOT dead
         """
@@ -102,7 +102,9 @@ class CellMatrix:
                     row[x] = new_state.value
 
     def apply_cells(
-        self, cells: list[tuple[int, int]], state: CellState = CellState.ALIVE
+            self,
+            cells: list[tuple[int, int]],
+            state: CellState = CellState.ALIVE
     ):
         """Adds given cells to the matrix if in bounds"""
 
@@ -124,9 +126,7 @@ class CellMatrix:
     def mutate(self):
         """Mutates the current cell matrix"""
 
-        next_matrix = [
-            [CellState.DEAD.value for _ in range(self.cols)] for _ in range(self.rows)
-        ]
+        next_matrix = [[CellState.DEAD.value for _ in range(self.cols)] for _ in range(self.rows)]
 
         # Determine if cell is alive (survive/resurrect) in the next matrix
         for y, row in enumerate(self._matrix):
@@ -176,9 +176,7 @@ class CellMatrix:
                 pass
 
         if self._is_wrap:
-            all_neighbours = {
-                (n[0] % self.cols, n[1] % self.rows) for n in all_neighbours
-            }
+            all_neighbours = {(n[0] % self.cols, n[1] % self.rows) for n in all_neighbours}
 
         for neighbour in all_neighbours:
             x, y = neighbour[0], neighbour[1]
@@ -217,9 +215,7 @@ class CellMatrix:
         y_coords_up = self._spread_integers(host_y, upper_y)
         y_coords_down = self._spread_integers(host_y, lower_y)
 
-        get_window_padding = lambda coord_range, target: (
-            coord_range.index(target) if target in coord_range else -1
-        )
+        get_window_padding = lambda coord_range, target: (coord_range.index(target) if target in coord_range else -1)
 
         neighbours: set[tuple[int, int]] = set()
 
