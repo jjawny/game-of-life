@@ -6,7 +6,6 @@ from time import sleep
 from copy import copy
 import numpy as np
 import curses
-import math
 
 
 class SimulationScreen:
@@ -56,11 +55,9 @@ class SimulationScreen:
 
         generations = self.generations_generator(self._num_of_generations, self._is_ghost_mode)
         delay_s = 1 / self._updates_per_s
-        offset = math.floor(len(self.curr_gen.as_str.split("\n")[0]) / 2)
-
         line_width = len(self.curr_gen.as_str.split("\n")[0])
 
-        self._render_banner(screen, offset)
+        self._render_banner(screen, line_width)
         screen.addstr(self.curr_gen.as_str)
         self._render_footer(screen, 1, line_width)
 
@@ -70,7 +67,7 @@ class SimulationScreen:
             sleep(delay_s)
 
             screen.clear()
-            self._render_banner(screen, offset)
+            self._render_banner(screen, line_width)
             screen.addstr(gen)
             self._render_footer(screen, idx + 1, line_width)
             screen.refresh()
@@ -118,8 +115,8 @@ class SimulationScreen:
         screen.addstr(f"Generation #{idx}".center(line_width))
         screen.addstr("\n")
     
-    def _render_banner(self, screen: curses.window, offset: int = 0):
-        screen.addstr("\n\n" + get_banner(offset) + "\n\n")
+    def _render_banner(self, screen: curses.window, line_width: int = 0):
+        screen.addstr("\n\n" + get_banner(line_width) + "\n\n")
 
     def _get_next_generation(self):
         """

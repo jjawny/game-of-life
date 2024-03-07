@@ -98,7 +98,8 @@ class MenuScreen:
             self._on_press(key=screen.getch())  # listen
 
     def _render_banner(self, screen: curses.window):
-        screen.addstr("\n\n" + get_banner(offset=23) + "\n\n")
+        menu_width = 46
+        screen.addstr("\n\n" + get_banner(menu_width) + "\n\n")
 
     def _render_settings_section(self, screen: curses.window):
         """
