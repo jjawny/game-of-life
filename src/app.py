@@ -3,24 +3,16 @@ from src.utils.settings_utils import get_settings
 from src.models.cell_matrix import CellMatrix
 from src.models.menu_screen import MenuScreen
 from src.utils.args_utils import get_cli_args
+from src.utils.seed_utils import get_seed
 from src.models.setting import Setting
 
 
 def setup_matrix(settings: list[Setting]) -> CellMatrix:
-    # TODO: temporarily inject the glider for testing, need to explore regression/unit testing in python
-    glider: list[tuple[int, int]] = [
-        # x, y
-        (0, 2),
-        (1, 1),
-        (2, 1),
-        (2, 2),
-        (2, 3),
-    ]
-
+    """Setup the matrix w settings"""
     # Convert to dict for easy assignment
     settings_dict = {setting.name: setting.value for setting in settings}
     matrix = CellMatrix(
-        seed=glider,
+        seed=get_seed(settings_dict["seed"]),
         cols=settings_dict["cols"],
         rows=settings_dict["rows"],
         random=settings_dict["random"],

@@ -1,6 +1,7 @@
 from src.enums.neighbourhood import Neighbourhood
 from src.models.setting import Setting
 from src.constants import constants
+from src.enums.seed import Seed
 
 
 def get_settings(args: dict[str, object]) -> list[Setting]:
@@ -113,6 +114,16 @@ def get_settings(args: dict[str, object]) -> list[Setting]:
             parse_value_callback=parse_radius,
             helper_text="Size of the neighbourhood",
         ),
+        # NOTE: Seed setting not accessable via CLI yet
+        Setting(
+            display_name="Seed",
+            name="seed",
+            value="None",
+            default_value=constants.DEFAULT_SEED.value,
+            possible_values=["Glider", "None"],
+            parse_value_callback=parse_seed,
+            helper_text="The seed",
+        ),
     ]
 
     return res
@@ -212,5 +223,22 @@ def parse_radius(value) -> int | None:
     try:
         if constants.MIN_RADIUS <= int(value) <= constants.MAX_RADIUS:
             return int(value)
+    except:
+        return None
+
+
+def parse_seed(value) -> Seed | None:
+    """Returns the parsed seed, otherwise None"""
+    try:
+        if not isinstance(value, str):
+            return None
+
+        match value.lower():
+            case "none":
+                return Seed.NONE
+            case "glider":
+                return Seed.GLIDER
+            case _:
+                return None
     except:
         return None

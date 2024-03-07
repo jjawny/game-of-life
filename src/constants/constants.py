@@ -1,4 +1,5 @@
 from src.enums.neighbourhood import Neighbourhood
+from src.enums.seed import Seed
 
 # Bounds
 MIN_GENERATIONS: int = 1
@@ -31,3 +32,4 @@ DEFAULT_RESURRECTION_RULE: set[int] = {3}
 DEFAULT_RANDOM: int = 50  # %
 DEFAULT_NEIGHBOURHOOD: Neighbourhood = Neighbourhood.MOORE
 DEFAULT_RADIUS: int = 1
+DEFAULT_SEED: Seed = Seed.GLIDER
