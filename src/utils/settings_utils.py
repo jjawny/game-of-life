@@ -35,7 +35,7 @@ def get_settings(args: dict[str, object]) -> list[Setting]:
             value=args.get("random", constants.DEFAULT_RANDOM),
             default_value=constants.DEFAULT_RANDOM,
             parse_value_callback=parse_random,
-            helper_text=f"Chance for cell to start alive {constants.MIN_RANDOM}..{constants.MAX_RANDOM}% inclusive",
+            helper_text=f"Chance for cell to start alive {constants.MIN_RANDOM}..{constants.MAX_RANDOM}% inclusive (disabled by seed)",
         ),
         Setting(
             display_name="Generations",
@@ -51,7 +51,7 @@ def get_settings(args: dict[str, object]) -> list[Setting]:
             value=args.get("updates_per_s", constants.DEFAULT_UPDATES_PER_S),
             default_value=constants.DEFAULT_UPDATES_PER_S,
             parse_value_callback=parse_updates_per_s,
-            helper_text=f"Refresh rate of generations per second {constants.MIN_UPDATES_PER_S}..{constants.MIN_UPDATES_PER_S} inclusive",
+            helper_text=f"Refresh rate of generations per second {constants.MIN_UPDATES_PER_S}..{constants.MAX_UPDATES_PER_S} inclusive",
         ),
         Setting(
             display_name="Ghost mode",
@@ -110,7 +110,7 @@ def get_settings(args: dict[str, object]) -> list[Setting]:
             name="seed",
             value="None",
             default_value=constants.DEFAULT_SEED.value,
-            possible_values=["Glider", "None"],
+            possible_values=["None", "Glider"],
             parse_value_callback=parse_seed,
             helper_text="The seed",
         ),

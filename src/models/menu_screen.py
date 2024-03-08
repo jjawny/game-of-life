@@ -280,8 +280,12 @@ class MenuScreen:
         Handles logic for determining if a setting is disabled (ignored) due to other settings
         """
 
-        # if opt.name == "random" and self._options:
+        # Random is disabled by seed that has any value other than "none"
+        if setting.name.lower() == "random":
+            seed_setting = next((s for s in self._settings if s.name == "seed"), None)
+            is_using_seed = seed_setting and isinstance(seed_setting.value, str) and str(seed_setting.value).strip().lower() not in ["none", ""]
+            
+            if is_using_seed:
+                return True
 
-        # random is disabled by seed
-        # updates_per_s is disabled by step
         return False
