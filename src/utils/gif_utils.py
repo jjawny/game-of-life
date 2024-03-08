@@ -25,7 +25,7 @@ def export_as_gif(strings: list[str], updates_per_s: int = 1) -> bool:
     x, y = _get_inches_xy(strings[0])
 
     for s in strings:
-        img_bytes_list.append(_convert_to_frame_bytes(s, x, y))
+        img_bytes_list.append(_convert_to_img_bytes(s, x, y))
 
     frames = [Image.open(img) for img in img_bytes_list]
     final_frames = frames[1:]
@@ -71,10 +71,14 @@ def _get_inches_xy(string: str) -> tuple[float, float]:
     inches_x = font_points_x / 46.4
     inches_y = font_points_y / 45
 
+    # Avoid errors ensuring values are within bounds for Pillow and Matplotlib
+    inches_x = 0.1 if inches_x == 0 else inches_x
+    inches_y = 0.1 if inches_y == 0 else inches_y
+
     return (inches_x, inches_y)
 
 
-def _convert_to_frame_bytes(string: str, width: float, height: float):
+def _convert_to_img_bytes(string: str, width: float, height: float):
     img_bytes = BytesIO()
 
     plot.figure(figsize=(width, height), facecolor="silver")

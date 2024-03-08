@@ -47,7 +47,36 @@ class SimulationScreen:
         """
         curses.wrapper(self._render_screen)
         return self._gen_string_history
-    
+
+    def assign_new_cell_matrix(self, matrix: CellMatrix):
+        """
+        Assigns a new cell matrix as the current generation and resets previous generations history
+        """
+        self._prev_gens = []
+        self._curr_gen = matrix
+
+    def generations_generator(self, num_of_generations: int, is_ghost_mode: bool = True):
+        """
+        Returns a generator for accessing each generation as the cells evolve
+        """
+        border_sides = "┊{}┊".format
+        border_top = f"╭{"┈┈" * self._curr_gen.cols}╮"
+        border_bottom = f"╰{"┈┈" * self._curr_gen.cols}╯"
+
+        for _ in range(0, num_of_generations):
+            self._get_next_generation()
+            next_gen = (
+                self._combine_all_gens_as_str()
+                if is_ghost_mode
+                else self._curr_gen.as_str
+            )
+            
+            # Add border - TODO: turn into option?
+            next_gen_w_side_borders = '\n'.join(border_sides(line) for line in next_gen.split('\n'))
+            next_gen_w_all_borders = "{}\n{}\n{}".format(border_top, next_gen_w_side_borders, border_bottom)
+            
+            yield next_gen_w_all_borders
+
     def _render_screen(self, screen: curses.window):
         """
         Call with Curses wrapper to inject curses std screen obj (stdscr)
@@ -85,35 +114,6 @@ class SimulationScreen:
         screen.addstr("\n")
         screen.refresh()
         export_as_gif(self._gen_string_history)
-
-    def assign_new_cell_matrix(self, matrix: CellMatrix):
-        """
-        Assigns a new cell matrix as the current generation and resets previous generations history
-        """
-        self._prev_gens = []
-        self._curr_gen = matrix
-
-    def generations_generator(self, num_of_generations: int, is_ghost_mode: bool = True):
-        """
-        Returns a generator for accessing each generation as the cells evolve
-        """
-        border_sides = "┊{}┊".format
-        border_top = f"╭{"┈┈" * self._curr_gen.cols}╮"
-        border_bottom = f"╰{"┈┈" * self._curr_gen.cols}╯"
-
-        for _ in range(0, num_of_generations):
-            self._get_next_generation()
-            next_gen = (
-                self._combine_all_gens_as_str()
-                if is_ghost_mode
-                else self._curr_gen.as_str
-            )
-            
-            # Add border - TODO: turn into option?
-            next_gen_w_side_borders = '\n'.join(border_sides(line) for line in next_gen.split('\n'))
-            next_gen_w_all_borders = "{}\n{}\n{}".format(border_top, next_gen_w_side_borders, border_bottom)
-            
-            yield next_gen_w_all_borders
 
     def _render_footer(self, screen: curses.window, idx: int, line_width: int = 0):
         """Renders the footer"""
