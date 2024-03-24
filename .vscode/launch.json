@@ -3,7 +3,7 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
 
-    // Console summaries:
+    // NOTE: Curses seems to only work in 'integratedTerminal'
     //  - internalConsole = VSCode debug console
     //  - integratedTerminal = VSCode (integrated) terminal
     //  - externalTerminal = launch new terminal (OS default)

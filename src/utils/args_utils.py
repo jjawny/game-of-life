@@ -9,7 +9,7 @@ def get_cli_args() -> dict:
 
     _add_game_of_life_args(parser)
 
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
     res = {
         "cols": args.dimensions[1],
         "rows": args.dimensions[0],
