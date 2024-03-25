@@ -1,5 +1,6 @@
 from src.utils.string_utils import get_banner
 from src.models.setting import Setting
+from dotenv import dotenv_values
 import curses
 import re
 
@@ -29,6 +30,7 @@ class MenuScreen:
         self,
         settings: list[Setting] | None = None,
     ):
+        self.env_vars = dotenv_values(".env")
         if settings:
             self._settings = settings
         else:
@@ -140,6 +142,7 @@ class MenuScreen:
 
     def _render_footer(self, screen: curses.window):
         """Renders the footer"""
+        version = self.env_vars.get("VERSION", None)
         center_len = 44
 
         # Setting's helper message
@@ -186,6 +189,11 @@ class MenuScreen:
 
         screen.addstr(exit_msg.center(center_len), self._DISABLED_COLOR)
         screen.addstr("\n")
+
+        # Version
+        if version:
+            screen.addstr((f"v{version}").center(center_len), self._DISABLED_COLOR)
+            screen.addstr("\n")
 
     def _on_press(self, key: int):
         """
