@@ -50,7 +50,7 @@ Use VS Code + Python Extension:
 
 ### _"why did you commit .env?"_
 
-This is a toy app (no PII, no secrets, nothing sensitive), .env here is purely used to inject dynamic for the game
+This is a toy app (no PII, no secrets, nothing sensitive), this [.env](./.env) is purely for injecting dynamic into the game
 
 ### _"how do i regen the dependency graph?"_
 
