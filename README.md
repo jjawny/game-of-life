@@ -1,67 +1,20 @@
-<style>
-  img {
-    border-radius: 10px;
-  }
-  .demo-container img {
-    flex: 1;
-    max-width: calc(33.33% - 10px); /* 3 images and shrink to create small gap between */
-    height: auto; /* maintain aspect ratio */
-  }
-  .demo-container {
-    display: flex;
-    flex-wrap: none;
-    justify-content: space-between;
-  }
-  span {
-    display: inline-block;
-    padding: 0px 5px;
-    border-radius: 5px;
-  }
-  .redacted {
-    color: white;
-    background-color: black;
-  }
-  .dotnet {
-    color: white;
-    background-color: purple;
-  }
-</style>
-
-<!-- Badge pills -->
-
-![Python Version](https://img.shields.io/badge/Python-3.12.2-blue)
-
-<!-- Demo -->
-<div style="text-align: center">
-  <h1>Game of Life v2</h1>
-  <p>A speedrun of rewriting an old uni project</p>
+<div align="center">
+  <h1>Game of Life</h1>
+  <p>Speedrun Rewriting an Old Uni Project</p>
+    <img src="docs/images/gol-demo-all.gif">
 </div>
 
-<div class="demo-container">
-  <img src="images/gol-demo-settings-screen.gif">
-  <img src="images/gol-demo-simulation-screen.gif">
-  <img src="images/gol-demo-output.gif">
-</div>
+## 🔌 How do I run it?
 
-<!-- Main content -->
+1. assuming you have **asdf** installed
+2. `python -m venv venv`
+3. `source ./venv/bin/activate`
+4. `pip install -r requirements.txt`
+5. `python ./src/app`  
+   OR  
+   `./game-of-life.py` (requires execution perms: `chmod u+x game-of-life.py`)
 
-## Why ?
-
-One of my old uni projects involved mocking the Software Development lifecycle while creating the classic _Game of Life_. The next step in my professional journey involves me automating <span class="redacted">[REDACTED]</span> using Python for **everything**. After writing predominantly React/.NET apps for the past year, I saw this as the perfect way to get wired into Python development again.
-
-The following is a speedrun of rewriting my original <span class="dotnet">.NET</span> implementation of _Game of Life_ into an enhanced version - highly interactive and feature rich.
-
-## Setup
-
-- Use Python version >=3.12.2
-- Recommend using **pyenv** (like **nvm**): `pyenv install 3.12.2`, `pyenv global 3.12.2`
-- Setup virtual environment `python -m venv venv`
-- Activate in VSCode or `source ./venv/bin/activate`
-- Install dependencies `pip install -r requirements.txt`
-- To run via CLI, main script needs execute perms: `chmod u+x game-of-life.py`
-- Run `./game-of-life.py`
-
-## Usage
+## 📋 How do I use it?
 
 ```
 (\(\
@@ -88,15 +41,15 @@ The following is a speedrun of rewriting my original <span class="dotnet">.NET</
 
 - Use VSCode:
 
-  ![venv](images/venv.png)
+  ![venv](docs/images/venv.png)
 
-  ![debug](images/debug.png)
+  ![debug](docs/images/debug.png)
 
 ### _How do I run unit tests ?_
 
 - Use VSCode:
 
-  ![debug](images/tests.png)
+  ![debug](docs/images/tests.png)
 
 ### _How do I regen the dependency graph ?_
 
@@ -104,7 +57,7 @@ The following is a speedrun of rewriting my original <span class="dotnet">.NET</
 
 ## Dependency Graph
 
-<img src="images/dependencies.png">
+<img src="docs/images/dependencies.png">
 
 - _curses_ for pretty screens + key events
 - _numpy_ for merging multiple cell matrices (for ghost effect)
