@@ -50,7 +50,7 @@ Use VS Code + Python Extension:
 
 ### _"how do i regen the dependency graph?"_
 
-- Run `pipdeptree --graph-output png > dependencies.png`
+Run `pipdeptree --graph-output png > dependencies.png`
 
 ## 🕸️ Dependency Graph
 
