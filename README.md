@@ -1,16 +1,16 @@
 <div align="center">
   <h1>Game of Life</h1>
   <p>Speedrun Rewriting an Old Uni Project</p>
-    <img src="docs/images/gol-demo-all.gif">
+    <img src="README/gol-demo-all.gif">
 </div>
 
 ## 🔌 How do I run it?
 
 1. assuming you have **asdf** installed
-2. `python -m venv venv`
+2. `python3 -m venv venv`
 3. `source ./venv/bin/activate`
 4. `pip install -r requirements.txt`
-5. `python ./src/app`  
+5. `python3 ./src/app`  
    OR  
    `./game-of-life.py` (requires execution perms: `chmod u+x game-of-life.py`)
 
@@ -41,15 +41,15 @@
 
 - Use VSCode:
 
-  ![venv](docs/images/venv.png)
+  ![venv](README/venv.png)
 
-  ![debug](docs/images/debug.png)
+  ![debug](README/debug.png)
 
 ### _How do I run unit tests ?_
 
 - Use VSCode:
 
-  ![debug](docs/images/tests.png)
+  ![debug](README/tests.png)
 
 ### _How do I regen the dependency graph ?_
 
@@ -57,7 +57,7 @@
 
 ## Dependency Graph
 
-<img src="docs/images/dependencies.png">
+<img src="README/dependencies.png">
 
 - _curses_ for pretty screens + key events
 - _numpy_ for merging multiple cell matrices (for ghost effect)
