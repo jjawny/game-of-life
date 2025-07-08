@@ -32,7 +32,7 @@
 - Press <kbd>space</kbd> <kbd>space</kbd> to start
 - Press <kbd>Ctrl</kbd> <kbd>C</kbd> to exit
 
-### There are GIFs?
+### _"there are GIFs?"_
 - When the game ends, a GIF of the run is generated
 - GIFs are saved in [./gifs](./gifs/)
 
@@ -52,7 +52,7 @@ Use VS Code + Python Extension:
 
 - Run `pipdeptree --graph-output png > dependencies.png`
 
-## Dependency Graph
+## 🕸️ Dependency Graph
 
 <img src="README/dependency-graph.png">
 
