@@ -48,10 +48,6 @@ Use VS Code + Python Extension:
 Use VS Code + Python Extension:  
 ![how to test](README/how-to-test.png)
 
-### _"why did you commit .env?"_
-
-This is a toy app (no PII, no secrets, nothing sensitive), this [.env](./.env) is purely for injecting dynamic into the game
-
 ### _"how do i regen the dependency graph?"_
 
 Run `pipdeptree --graph-output png > dependencies.png`
