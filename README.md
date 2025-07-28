@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>☘️ Game of Life</h1>
+  <h1>🎮 Game of Life</h1>
   <p>Speedrun Rewriting an Old Uni Project</p>
     <img src="README/gol-demo-all.gif">
 </div>
