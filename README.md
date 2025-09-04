@@ -1,17 +1,20 @@
 <div align="center">
   <h1><img src="./README/gol-icon.gif"> Game of Life</h1>
-  <p>Speedrun Rewriting an Old Uni Project</p>
+  <p>Simulate life itself</p>
     <img src="README/gol-demo-all.gif">
 </div>
 
 ## 🔌 How do I run it?
 
-1. assuming you have **asdf** installed
-2. `python3 -m venv venv`
-3. `source ./venv/bin/activate`
-4. `pip install -r requirements.txt`
-5. `./game-of-life.py`  
-  (may require execution perms: `chmod u+x game-of-life.py`)
+1. Assumes you have [asdf](./.tool-versions) installed (last using Python 3.13.5)
+2. Run in [root](.):
+   ```shell
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+   ./game-of-life.py
+   ```
+3. Script may require execution permissions: `chmod u+x game-of-life.py`
 
 
 ## 🎮 How do I play?
@@ -32,25 +35,27 @@
 - Press <kbd>space</kbd> <kbd>space</kbd> to start
 - Press <kbd>Ctrl</kbd> <kbd>C</kbd> to exit
 
-### _"there are GIFs?"_
-- When the game ends, a GIF of the run is generated
-- GIFs are saved in [./gifs](./gifs/)
+## ❓ FAQ
 
-## 🧑🏻‍💻 Dev FAQ
+### _"There are GIFs?"_
 
-### _"how do i debug?"_
+When the game ends, a GIF of the run is generated and saved in [./gifs](./gifs/).
+
+### _"How do I debug?"_
 
 Use VS Code + Python Extension:  
 ![how to debug](README/how-to-debug.png)
 
-### _"how do i run unit tests?"_
+### _"How do I run unit tests?"_
 
 Use VS Code + Python Extension:  
 ![how to test](README/how-to-test.png)
 
-### _"how do i regen the dependency graph?"_
+### _"How do I regenerate the dependency graph?"_
 
-Run `pipdeptree --graph-output png > dependencies.png`
+```shell
+pipdeptree --graph-output png > dependencies.png
+```
 
 ## 🕸️ Dependency Graph
 
